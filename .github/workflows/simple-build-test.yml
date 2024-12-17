@@ -1,0 +1,75 @@
+
+name: Simple build and test
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+      - '.github/dependabot.yml'
+      - '.github/workflows/container-build.yml'
+      - '.github/workflows/simple-build-test.yml'
+      - '.github/workflows/dependabot-automerge.yml'
+      - '.github/workflows/sync-main-to-other-branches.yml'
+      - '.github/workflows/sync-to-ai-llm-template.yml'
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+      - '.github/dependabot.yml'
+      - '.github/workflows/container-build.yml'
+      - '.github/workflows/simple-build-test.yml'
+      - '.github/workflows/dependabot-automerge.yml'
+      - '.github/workflows/sync-main-to-other-branches.yml'
+      - '.github/workflows/sync-to-ai-llm-template.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: "workflow = ${{ github.workflow }}, ref = ${{ github.event.ref }}, pr = ${{ github.event.pull_request.id }}"
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  jvm-build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java:
+          - '21'
+        ai-provider:
+          - ollama
+          - jlama
+          - ollama-openai
+    services:
+      ollama:
+        image: ollama/ollama
+        ports:
+          - 11434:11434
+        options: --name ollama --rm
+    name: "jvm-build-test-${{ matrix.java }}-${{ matrix.ai-provider }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: temurin
+          cache: maven
+
+      - name: Pull Ollama models (if necessary)
+        if: matrix.ai-provider == 'ollama-openai'
+        run: docker exec ollama bash -c "ollama pull llama3.2 && ollama pull snowflake-arctic-embed && ollama ls"
+
+      - name: "build-test-jvm-java${{ matrix.java }}-${{ matrix.ai-provider }}"
+        run: |
+          ./mvnw -B clean verify \
+            -P${{ matrix.ai-provider }} \
+            -Dquarkus.http.host=0.0.0.0 \
+            -Dmaven.compiler.release=${{ matrix.java }}
