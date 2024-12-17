@@ -1,5 +1,3 @@
-By default the app will assume there is a chat model on https://localhost:8000/v1 that exposes an OpenAI endpoint.
-
 # Using Ollama
 If you would like to use [Ollama](https://ollama.com/) instead, first install/run Ollama on your machine. Then do one of the following:
 
