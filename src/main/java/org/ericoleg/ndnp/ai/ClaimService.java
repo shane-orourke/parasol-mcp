@@ -7,8 +7,9 @@ import org.ericoleg.ndnp.model.ClaimBotQuery;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import io.quarkiverse.langchain4j.RegisterAiService;
+import io.quarkiverse.langchain4j.ToolBox;
 
-@RegisterAiService(modelName = "parasol-chat", tools = NotificationService.class)
+@RegisterAiService(modelName = "parasol-chat")
 @SessionScoped
 public interface ClaimService {
     @SystemMessage("""
@@ -33,6 +34,11 @@ public interface ClaimService {
 
         Question: {{query.query}}
     """)
+    // If we want to support using Ollama with the OpenAI API, we can't do streaming with tools
+    // See https://github.com/langchain4j/langchain4j/issues/2289
+    // If we don't care about Ollama via OpenAI, then we can switch to streaming
+    // OpenAI, Jlama, and Ollama all support it
+    @ToolBox(NotificationService.class)
     String chat(ClaimBotQuery query);
 //    Multi<String> chat(ClaimBotQuery query);
 }

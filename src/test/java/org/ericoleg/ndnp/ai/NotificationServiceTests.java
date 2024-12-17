@@ -8,12 +8,12 @@ import java.util.Optional;
 
 import jakarta.inject.Inject;
 
+import org.ericoleg.ndnp.model.Claim;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.ericoleg.ndnp.model.Claim;
 
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
@@ -70,9 +70,16 @@ class NotificationServiceTests {
 			);
 
 		// Assert that the message has the correct info in the body
-		assertThat(message.get().getText())
+		assertThat(message.get().getText().strip())
+			.isNotNull();
+
+		assertThat(message.get().getText().strip().replaceAll("\r\n", "\n"))
 			.isNotNull()
-			.isEqualToNormalizingNewlines(NotificationService.MESSAGE_BODY.formatted(claim.clientName, claim.claimNumber, status));
+			.startsWith(GenerateEmailService.EMAIL_STARTING.strip())
+			.endsWith(GenerateEmailService.EMAIL_ENDING.strip())
+			.contains(claim.clientName)
+			.contains(claim.claimNumber)
+			.contains(status);
 
 		// Assert that the claim status was updated in the database
 		var updatedClaim = Claim.findById(claimId);

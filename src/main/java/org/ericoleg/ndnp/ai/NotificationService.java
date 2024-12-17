@@ -8,6 +8,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import org.ericoleg.ndnp.ai.GenerateEmailService.ClaimInfo;
 import org.ericoleg.ndnp.model.Claim;
 
 import io.quarkus.mailer.Mail;
@@ -34,23 +35,11 @@ public class NotificationService {
 	// Email subject
 	static final String MESSAGE_SUBJECT = "Update to your claim";
 
-	// Email body
-	static final String MESSAGE_BODY = """
-		Dear %s,
-		
-		This is an official communication from the Parasol Insurance Claims Department. We wanted to let you know that your claim (claim # %s) has changed status to "%s".
-		
-		Sincerely,
-		Parasoft Insurance Claims Department
-		
-		--------------------------------------------
-		Please note this is an unmonitored email box.
-		Should you choose to reply, nobody (not even an AI bot) will see your message.
-		Call a real human should you have any questions. 1-800-CAR-SAFE.
-		""";
-
 	@Inject
 	ReactiveMailer mailer;
+
+	@Inject
+	GenerateEmailService generateEmailService;
 
 	@Tool("update claim status")
 	@Transactional
@@ -89,7 +78,7 @@ public class NotificationService {
 		var email = Mail.withText(
 			claim.emailAddress,
 				MESSAGE_SUBJECT,
-				MESSAGE_BODY.formatted(claim.clientName, claim.claimNumber, claim.status)
+				this.generateEmailService.generateEmail(new ClaimInfo(claim.clientName, claim.claimNumber, claim.status))
 			)
 			.setFrom(MESSAGE_FROM);
 
