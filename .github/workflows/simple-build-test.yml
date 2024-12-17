@@ -68,6 +68,8 @@ jobs:
         run: docker exec ollama bash -c "ollama pull llama3.2 && ollama pull snowflake-arctic-embed && ollama ls"
 
       - name: "build-test-jvm-java${{ matrix.java }}-${{ matrix.ai-provider }}"
+        env:
+          OPENAI_API_KEY: change-me
         run: |
           ./mvnw -B clean verify \
             -P${{ matrix.ai-provider }} \
