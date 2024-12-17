@@ -1,17 +1,20 @@
 package org.ericoleg.ndnp.model;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
-import java.time.LocalDate;
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 @Entity
+@Table(name = "claims")
 @JsonNaming(SnakeCaseStrategy.class)
 public class Claim extends PanacheEntity {
     public String claimNumber;

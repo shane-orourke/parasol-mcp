@@ -57,6 +57,10 @@
       <artifactId>quarkus-langchain4j-easy-rag</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.quarkiverse.langchain4j</groupId>
+      <artifactId>quarkus-langchain4j-milvus</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-websockets-next</artifactId>
     </dependency>
@@ -94,11 +98,11 @@
       <groupId>io.opentelemetry.instrumentation</groupId>
       <artifactId>opentelemetry-jdbc</artifactId>
     </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-observability-devservices-lgtm</artifactId>
-      <scope>provided</scope>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>io.quarkus</groupId>-->
+<!--      <artifactId>quarkus-observability-devservices-lgtm</artifactId>-->
+<!--      <scope>provided</scope>-->
+<!--    </dependency>-->
     <dependency>
       <groupId>io.quarkiverse.micrometer.registry</groupId>
       <artifactId>quarkus-micrometer-registry-otlp</artifactId>
