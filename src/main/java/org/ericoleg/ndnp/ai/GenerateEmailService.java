@@ -1,5 +1,6 @@
 package org.ericoleg.ndnp.ai;
 
+import org.ericoleg.ndnp.ai.guardrail.EmailContainsRequiredInformationOutputGuardrail;
 import org.ericoleg.ndnp.ai.guardrail.EmailEndsAppropriatelyOutputGuardrail;
 import org.ericoleg.ndnp.ai.guardrail.EmailStartsAppropriatelyOutputGuardrail;
 import org.ericoleg.ndnp.ai.guardrail.PolitenessOutputGuardrail;
@@ -42,6 +43,11 @@ public interface GenerateEmailService {
 		
 		Make sure to include the claim number ({{claimInfo.claimNumber}}) and that the claim's status has been changed to "{{claimInfo.claimStatus}}".
 		""")
-	@OutputGuardrails({ EmailStartsAppropriatelyOutputGuardrail.class, EmailEndsAppropriatelyOutputGuardrail.class, PolitenessOutputGuardrail.class })
+	@OutputGuardrails({
+		EmailStartsAppropriatelyOutputGuardrail.class,
+		EmailEndsAppropriatelyOutputGuardrail.class,
+		EmailContainsRequiredInformationOutputGuardrail.class,
+		PolitenessOutputGuardrail.class
+	})
 	String generateEmail(ClaimInfo claimInfo);
 }

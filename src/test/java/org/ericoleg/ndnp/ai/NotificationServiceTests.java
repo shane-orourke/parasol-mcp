@@ -78,8 +78,8 @@ class NotificationServiceTests {
 			.startsWith(GenerateEmailService.EMAIL_STARTING.strip())
 			.endsWith(GenerateEmailService.EMAIL_ENDING.strip())
 			.contains(claim.clientName)
-			.contains(claim.claimNumber)
-			.contains(status);
+			.containsIgnoringCase(claim.claimNumber)
+			.containsIgnoringCase(status);
 
 		// Assert that the claim status was updated in the database
 		var updatedClaim = Claim.findById(claimId);

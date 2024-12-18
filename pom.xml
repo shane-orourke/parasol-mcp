@@ -289,6 +289,7 @@
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
+              <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
               <systemPropertyVariables>
                 <quarkus.profile>ollama</quarkus.profile>
                 <quarkus.test.profile>ollama,test</quarkus.test.profile>
@@ -298,6 +299,7 @@
           <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
             <configuration>
+              <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
               <systemPropertyVariables>
                 <quarkus.profile>ollama</quarkus.profile>
                 <quarkus.test.profile>ollama,test</quarkus.test.profile>
@@ -329,6 +331,7 @@
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
+              <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
               <systemPropertyVariables>
                 <quarkus.profile>ollama-openai</quarkus.profile>
                 <quarkus.test.profile>ollama-openai,test</quarkus.test.profile>
@@ -338,6 +341,7 @@
           <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
             <configuration>
+              <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
               <systemPropertyVariables>
                 <quarkus.profile>ollama-openai</quarkus.profile>
                 <quarkus.test.profile>ollama-openai,test</quarkus.test.profile>
@@ -390,7 +394,7 @@
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <argLine>--enable-preview --enable-native-access=ALL-UNNAMED --add-modules jdk.incubator.vector</argLine>
+              <argLine>--enable-preview --enable-native-access=ALL-UNNAMED --add-modules jdk.incubator.vector -javaagent:${org.mockito:mockito-core:jar}</argLine>
               <systemPropertyVariables>
                 <quarkus.profile>jlama</quarkus.profile>
                 <quarkus.test.profile>jlama,test</quarkus.test.profile>
@@ -401,7 +405,7 @@
           <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
             <configuration>
-              <argLine>--enable-preview --enable-native-access=ALL-UNNAMED --add-modules jdk.incubator.vector</argLine>
+              <argLine>--enable-preview --enable-native-access=ALL-UNNAMED --add-modules jdk.incubator.vector -javaagent:${org.mockito:mockito-core:jar}</argLine>
               <systemPropertyVariables>
                 <quarkus.profile>ollama</quarkus.profile>
                 <quarkus.test.profile>ollama,test</quarkus.test.profile>

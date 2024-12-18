@@ -41,11 +41,15 @@ public class NotificationService {
 	@Inject
 	GenerateEmailService generateEmailService;
 
-	@Tool("update claim status")
+	@Tool("""
+		Update the status of a claim.
+		This should only be used if the user explicitly asks to update the status of a claim.
+		Do not decide on your own to update the status.
+		""")
 	@Transactional
 	@WithSpan("NotificationService.updateClaimStatus")
 	public String updateClaimStatus(@SpanAttribute("arg.claimId") long claimId, @SpanAttribute("arg.status") String status) {
-		// Only want to actually do anything if the passed in status has at lease 3 characters
+		// Only want to actually do anything if the passed in status has at least 3 characters
 		return Optional.ofNullable(status)
 			.filter(s -> s.trim().length() > 2)
 			.map(s -> updateStatus(claimId, s))
