@@ -6,13 +6,13 @@ import java.util.concurrent.ForkJoinPool;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 
 import org.ericoleg.ndnp.ai.GenerateEmailService.ClaimInfo;
 import org.ericoleg.ndnp.model.Claim;
 
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.reactive.ReactiveMailer;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 
 import dev.langchain4j.agent.tool.Tool;
 import io.opentelemetry.instrumentation.annotations.SpanAttribute;
@@ -46,7 +46,6 @@ public class NotificationService {
 		This should only be used if the user explicitly asks to update the status of a claim.
 		Do not decide on your own to update the status.
 		""")
-	@Transactional
 	@WithSpan("NotificationService.updateClaimStatus")
 	public String updateClaimStatus(@SpanAttribute("arg.claimId") long claimId, @SpanAttribute("arg.status") String status) {
 		// Only want to actually do anything if the passed in status has at least 3 characters
@@ -58,26 +57,25 @@ public class NotificationService {
 
 	private String updateStatus(long claimId, String status) {
 		// Only want to actually do anything if there is a corresponding claim in the database for the given claimId
-		return Claim.<Claim>findByIdOptional(claimId)
-			.map(claim -> updateStatus(claim, status))
+		return QuarkusTransaction.requiringNew().call(() ->
+			Claim.<Claim>findByIdOptional(claimId)
+			     .map(claim -> updateStatus(claim, status))
+			)
+			.map(this::sendEmail)
 			.orElse(NOTIFICATION_NO_CLAIMANT_FOUND);
 	}
 
-	private String updateStatus(Claim claim, String status) {
+	private Claim updateStatus(Claim claim, String status) {
 		// Capitalize the first letter
 		claim.status = status.trim().substring(0, 1).toUpperCase() + status.trim().substring(1);
 
 		// Save the claim with updated status
 		Claim.persist(claim);
 
-		// Send the email
-		sendEmail(claim);
-
-		// Return a note to the AI
-		return NOTIFICATION_SUCCESS.formatted(claim.emailAddress, claim.claimNumber, claim.status);
+		return claim;
 	}
 
-	private void sendEmail(Claim claim) {
+	private String sendEmail(Claim claim) {
 		// Create the email
 		var email = Mail.withText(
 			claim.emailAddress,
@@ -92,5 +90,8 @@ public class NotificationService {
 		this.mailer.send(email)
 			.runSubscriptionOn(ForkJoinPool.commonPool())
 			.await().atMost(Duration.ofSeconds(15));
+
+		// Return a note to the AI
+		return NOTIFICATION_SUCCESS.formatted(claim.emailAddress, claim.claimNumber, claim.status);
 	}
 }
