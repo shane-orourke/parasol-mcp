@@ -15,6 +15,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -118,4 +119,7 @@ class NotificationServiceTests {
 	private Optional<Message> findFirstMessage() {
 		return Optional.ofNullable(this.mailbox.findFirst(NotificationService.MESSAGE_FROM));
 	}
+
+	@RegisterForReflection
+	public record ClaimStatus(String status) { }
 }

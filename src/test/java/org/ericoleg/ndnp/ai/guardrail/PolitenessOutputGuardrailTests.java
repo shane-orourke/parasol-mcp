@@ -1,6 +1,6 @@
 package org.ericoleg.ndnp.ai.guardrail;
 
-import static org.ericoleg.ndnp.ai.guardrail.GuardrailAssertions.assertThat;
+import static io.quarkiverse.langchain4j.guardrails.GuardrailAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
