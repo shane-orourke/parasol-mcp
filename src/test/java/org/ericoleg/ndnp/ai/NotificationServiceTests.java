@@ -15,7 +15,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import io.quarkus.runtime.annotations.RegisterForReflection;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -27,6 +27,8 @@ import io.quarkiverse.mailpit.test.model.Message;
 @QuarkusTest
 @WithMailbox
 class NotificationServiceTests {
+	private static final Duration WAIT_DURATION = Duration.ofMinutes(5);
+
 	@InjectMailbox
 	Mailbox mailbox;
 
@@ -39,58 +41,65 @@ class NotificationServiceTests {
 	}
 
 	@Test
-	@TestTransaction
 	void emailSendsWhenUserExists() {
-		var status = "Denied";
-		var claimId = 1L;
-		var claim = Claim.<Claim>findByIdOptional(claimId)
-		                 .orElseThrow(() -> new IllegalArgumentException("Marty McFly's claim should be found!"));
+		QuarkusTransaction.begin(QuarkusTransaction.beginOptions().timeout((int) WAIT_DURATION.toSeconds()));
 
-		assertThat(this.emailService.updateClaimStatus(claimId, status))
-			.isNotNull()
-			.isEqualTo(NotificationService.NOTIFICATION_SUCCESS, claim.emailAddress, claim.claimNumber, status);
+		try {
+			var status = "Denied";
+			var claimId = 1L;
+			var claim = Claim.<Claim>findByIdOptional(claimId)
+			                 .orElseThrow(() -> new IllegalArgumentException("Marty McFly's claim should be found!"));
 
-		await()
-			.atMost(Duration.ofMinutes(5))
-			.until(() -> findFirstMessage().isPresent());
+			assertThat(this.emailService.updateClaimStatus(claimId, status))
+				.isNotNull()
+				.isEqualTo(NotificationService.NOTIFICATION_SUCCESS, claim.emailAddress, claim.claimNumber, status);
 
-		// Find the message in Mailpit
-		var message = findFirstMessage();
+			await()
+				.atMost(WAIT_DURATION)
+				.until(() -> findFirstMessage().isPresent());
 
-		// Assert the message has the correct subject & email address
-		assertThat(message)
-			.isNotNull()
-			.get()
-			.extracting(
-				Message::getSubject,
-				m -> m.getTo().getFirst().getAddress()
-			)
-			.containsExactly(
-				NotificationService.MESSAGE_SUBJECT,
-				claim.emailAddress
-			);
+			// Find the message in Mailpit
+			var message = findFirstMessage();
 
-		// Assert that the message has the correct info in the body
-		assertThat(message.get().getText().strip())
-			.isNotNull();
+			// Assert the message has the correct subject & email address
+			assertThat(message)
+				.isNotNull()
+				.get()
+				.extracting(
+					Message::getSubject,
+					m -> m.getTo().getFirst().getAddress()
+				)
+				.containsExactly(
+					NotificationService.MESSAGE_SUBJECT,
+					claim.emailAddress
+				);
 
-		assertThat(message.get().getText().strip().replaceAll("\r\n", "\n"))
-			.isNotNull()
-			.startsWith(GenerateEmailService.EMAIL_STARTING.strip())
-			.endsWith(GenerateEmailService.EMAIL_ENDING.strip())
-			.contains(claim.clientName)
-			.containsIgnoringCase(claim.claimNumber)
-			.containsIgnoringCase(status);
+			// Assert that the message has the correct info in the body
+			assertThat(message.get().getText().strip())
+				.isNotNull();
 
-		// Assert that the claim status was updated in the database
-		var updatedClaim = Claim.findById(claimId);
-		assertThat(updatedClaim)
-			.isNotNull()
-			.extracting("status")
-			.isEqualTo(status);
+			assertThat(message.get().getText().strip().replaceAll("\r\n", "\n"))
+				.isNotNull()
+				.startsWith(GenerateEmailService.EMAIL_STARTING.strip())
+				.endsWith(GenerateEmailService.EMAIL_ENDING.strip())
+				.contains(claim.clientName)
+				.containsIgnoringCase(claim.claimNumber)
+				.containsIgnoringCase(status);
+
+			// Assert that the claim status was updated in the database
+			var updatedClaim = Claim.findById(claimId);
+			assertThat(updatedClaim)
+				.isNotNull()
+				.extracting("status")
+				.isEqualTo(status);
+		}
+		finally {
+			QuarkusTransaction.rollback();
+		}
 	}
 
 	@Test
+	@TestTransaction
 	void noEmailSentWhenClaimantNotFound() {
 		assertThat(this.emailService.updateClaimStatus(-1L, "Under investigation"))
 			.isNotNull()
@@ -119,7 +128,4 @@ class NotificationServiceTests {
 	private Optional<Message> findFirstMessage() {
 		return Optional.ofNullable(this.mailbox.findFirst(NotificationService.MESSAGE_FROM));
 	}
-
-	@RegisterForReflection
-	public record ClaimStatus(String status) { }
 }
