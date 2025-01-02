@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.concurrent.ForkJoinPool;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.spi.CDI;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -56,8 +57,11 @@ public class NotificationService {
 	}
 
 	private String updateStatus(long claimId, String status) {
+		// Need to get a handle on the bean instance programmatically because we need to be able to call the method in a transaction
+		var thisBeanInstance = CDI.current().select(NotificationService.class).get();
+
 		// Only want to actually do anything if there is a corresponding claim in the database for the given claimId
-		return updateStatusIfFound(claimId, status)
+		return thisBeanInstance.updateStatusIfFound(claimId, status)
 			.map(this::sendEmail)
 			.orElse(NOTIFICATION_NO_CLAIMANT_FOUND);
 	}
