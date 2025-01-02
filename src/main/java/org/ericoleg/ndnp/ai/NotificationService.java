@@ -67,7 +67,7 @@ public class NotificationService {
 	}
 
 	@Transactional
-	Optional<Claim> updateStatusIfFound(long claimId, String status) {
+	public Optional<Claim> updateStatusIfFound(long claimId, String status) {
 		return Claim.<Claim>findByIdOptional(claimId)
 			.map(claim -> {
 				// Capitalize the first letter

@@ -25,7 +25,6 @@ import io.quarkiverse.mailpit.test.WithMailbox;
 import io.quarkiverse.mailpit.test.model.Message;
 
 @QuarkusTest
-@TestTransaction
 @WithMailbox
 class NotificationServiceTests {
 	@InjectMailbox
@@ -40,11 +39,12 @@ class NotificationServiceTests {
 	}
 
 	@Test
+	@TestTransaction
 	void emailSendsWhenUserExists() {
 		var status = "Denied";
 		var claimId = 1L;
 		var claim = Claim.<Claim>findByIdOptional(claimId)
-			.orElseThrow(() -> new IllegalArgumentException("Marty McFly's claim should be found!"));
+		                 .orElseThrow(() -> new IllegalArgumentException("Marty McFly's claim should be found!"));
 
 		assertThat(this.emailService.updateClaimStatus(claimId, status))
 			.isNotNull()
