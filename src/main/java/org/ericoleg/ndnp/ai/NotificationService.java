@@ -1,7 +1,6 @@
 package org.ericoleg.ndnp.ai;
 
 import java.time.Duration;
-import java.util.Optional;
 import java.util.concurrent.ForkJoinPool;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -49,33 +48,35 @@ public class NotificationService {
 	@WithSpan("NotificationService.updateClaimStatus")
 	public String updateClaimStatus(@SpanAttribute("arg.claimId") long claimId, @SpanAttribute("arg.status") String status) {
 		// Only want to actually do anything if the passed in status has at least 3 characters
-		return Optional.ofNullable(status)
-			.filter(s -> s.strip().length() > 2)
-			.map(s -> updateStatus(claimId, s))
-			.orElseGet(() -> INVALID_STATUS.formatted(status));
+		return ((status != null) && (status.strip().length() > 2)) ?
+		       updateStatus(claimId, status) :
+		       INVALID_STATUS.formatted(status);
 	}
 
 	private String updateStatus(long claimId, String status) {
 		// Only want to actually do anything if there is a corresponding claim in the database for the given claimId
-		return updateStatusIfFound(claimId, status)
-			.map(this::sendEmail)
-			.orElse(NOTIFICATION_NO_CLAIMANT_FOUND);
+//		var txTimeout = ConfigUtils.isProfileActive("test") ? 5 * 60 : 0;
+		var updatedClaim = QuarkusTransaction.joiningExisting()
+//													.timeout(txTimeout)
+                          .call(() -> updateStatusIfFound(claimId, status));
+
+		return (updatedClaim != null) ?
+		       sendEmail(updatedClaim) :
+		       NOTIFICATION_NO_CLAIMANT_FOUND;
 	}
 
-	private Optional<Claim> updateStatusIfFound(long claimId, String status) {
-		return QuarkusTransaction.joiningExisting()
-      .call(() -> Claim.<Claim>findByIdOptional(claimId)
-            .map(claim -> {
-	            // Capitalize the first letter
-	            claim.status = status.trim().substring(0, 1).toUpperCase() + status.trim().substring(1);
+	private Claim updateStatusIfFound(long claimId, String status) {
+		var claim = Claim.<Claim>findById(claimId);
 
-	            // Save the claim with updated status
-	            Claim.persist(claim);
+		if (claim != null) {
+			// Capitalize the first letter
+			claim.status = status.strip().substring(0, 1).toUpperCase() + status.strip().substring(1);
 
-	            return claim;
-            })
-      )
-			.or(Optional::empty);
+			// Save the claim with updated status
+			Claim.persist(claim);
+		}
+
+		return claim;
 	}
 
 	private String sendEmail(Claim claim) {
