@@ -5,15 +5,14 @@ import java.util.Optional;
 import java.util.concurrent.ForkJoinPool;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.spi.CDI;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 
 import org.ericoleg.ndnp.ai.GenerateEmailService.ClaimInfo;
 import org.ericoleg.ndnp.model.Claim;
 
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.reactive.ReactiveMailer;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 
 import dev.langchain4j.agent.tool.Tool;
 import io.opentelemetry.instrumentation.annotations.SpanAttribute;
@@ -51,33 +50,32 @@ public class NotificationService {
 	public String updateClaimStatus(@SpanAttribute("arg.claimId") long claimId, @SpanAttribute("arg.status") String status) {
 		// Only want to actually do anything if the passed in status has at least 3 characters
 		return Optional.ofNullable(status)
-			.filter(s -> s.trim().length() > 2)
+			.filter(s -> s.strip().length() > 2)
 			.map(s -> updateStatus(claimId, s))
-			.orElse(INVALID_STATUS.formatted(status));
+			.orElseGet(() -> INVALID_STATUS.formatted(status));
 	}
 
 	private String updateStatus(long claimId, String status) {
-		// Need to get a handle on the bean instance programmatically because we need to be able to call the method in a transaction
-		var thisBeanInstance = CDI.current().select(NotificationService.class).get();
-
 		// Only want to actually do anything if there is a corresponding claim in the database for the given claimId
-		return thisBeanInstance.updateStatusIfFound(claimId, status)
+		return updateStatusIfFound(claimId, status)
 			.map(this::sendEmail)
 			.orElse(NOTIFICATION_NO_CLAIMANT_FOUND);
 	}
 
-	@Transactional
-	public Optional<Claim> updateStatusIfFound(long claimId, String status) {
-		return Claim.<Claim>findByIdOptional(claimId)
-			.map(claim -> {
-				// Capitalize the first letter
-				claim.status = status.trim().substring(0, 1).toUpperCase() + status.trim().substring(1);
+	private Optional<Claim> updateStatusIfFound(long claimId, String status) {
+		return QuarkusTransaction.joiningExisting()
+      .call(() -> Claim.<Claim>findByIdOptional(claimId)
+            .map(claim -> {
+	            // Capitalize the first letter
+	            claim.status = status.trim().substring(0, 1).toUpperCase() + status.trim().substring(1);
 
-				// Save the claim with updated status
-				Claim.persist(claim);
+	            // Save the claim with updated status
+	            Claim.persist(claim);
 
-				return claim;
-			});
+	            return claim;
+            })
+      )
+			.or(Optional::empty);
 	}
 
 	private String sendEmail(Claim claim) {
