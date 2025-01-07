@@ -1,30 +1,35 @@
 package org.ericoleg.ndnp.ai.guardrail;
 
 import static io.quarkiverse.langchain4j.guardrails.GuardrailAssertions.assertThat;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.ericoleg.ndnp.ai.GenerateEmailService.ClaimInfo;
+import org.ericoleg.ndnp.ai.ClaimInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectSpy;
 
 import dev.langchain4j.data.message.AiMessage;
 import io.quarkiverse.langchain4j.guardrails.GuardrailResult.Result;
 import io.quarkiverse.langchain4j.guardrails.OutputGuardrailParams;
 
+@QuarkusTest
 class EmailContainsRequiredInformationOutputGuardrailTests {
+	private static final String JSON = "{\"subject\":\"This is a subject\",\"body\":\"%s\"}";
 	private static final String CLAIM_NUMBER = "CLM195501";
 	private static final String CLAIM_STATUS = "denied";
 	private static final String CLIENT_NAME = "Marty McFly";
 	private static final String EMAIL_TEMPLATE = """
 		Dear %s,
-			
+		
 		We are writing to inform you that your claim (%s) has been reviewed and is currently under consideration. After careful evaluation of the evidence provided, we regret to inform you that your claim has been %s.
 		
 		Please note that our decision is based on the information provided in your policy declarations page, as well as applicable laws and regulations governing vehicle insurance claims.
@@ -40,33 +45,52 @@ class EmailContainsRequiredInformationOutputGuardrailTests {
 		Call a real human should you have any questions. 1-800-CAR-SAFE.
 		""";
 
-	EmailContainsRequiredInformationOutputGuardrail guardrail = spy(new EmailContainsRequiredInformationOutputGuardrail());
+	@InjectSpy
+	EmailContainsRequiredInformationOutputGuardrail guardrail;
 
 	@Test
 	void guardrailSuccess() {
-		var response = EMAIL_TEMPLATE.formatted(CLIENT_NAME, CLAIM_NUMBER, CLAIM_STATUS);
-		var params = createParams(response, CLAIM_NUMBER, CLAIM_STATUS, CLIENT_NAME);
+		var body = EMAIL_TEMPLATE.formatted(CLIENT_NAME, CLAIM_NUMBER, CLAIM_STATUS);
+		var params = createParams(body, CLAIM_NUMBER, CLAIM_STATUS, CLIENT_NAME);
 
 		assertThat(this.guardrail.validate(params))
-			.isSuccessful();
-
-		verify(this.guardrail).validate(params);
-		verify(this.guardrail).success();
-		verifyNoMoreInteractions(this.guardrail);
+			.hasResult(Result.SUCCESS_WITH_RESULT);
 	}
 
-	@Test
-	void emptyEmail() {
-		var params = createParams("", CLAIM_NUMBER, CLAIM_STATUS, CLIENT_NAME);
-		var result = this.guardrail.validate(params);
+	@ParameterizedTest
+	@NullAndEmptySource
+	@ValueSource(strings = { "    " })
+	void invalidSubject(String subject) {
+		var json = new StringBuilder("{\"body\": \"Your claim has been denied.\"");
 
-		assertThat(result)
+		if (subject != null) {
+			json.append(", \"subject\": \"").append(subject).append("\"");
+		}
+
+		json.append("}");
+		var message = AiMessage.from(json.toString());
+
+		assertThat(this.guardrail.validate(message))
 			.hasResult(Result.FATAL)
-			.hasSingleFailureWithMessage(EmailContainsRequiredInformationOutputGuardrail.NO_RESPONSE_MESSAGE);
+			.hasSingleFailureWithMessage(EmailContainsRequiredInformationOutputGuardrail.REPROMPT_MESSAGE.formatted("subject"));
+	}
 
-		verify(this.guardrail).validate(params);
-		verify(this.guardrail).reprompt(EmailContainsRequiredInformationOutputGuardrail.NO_RESPONSE_MESSAGE, EmailContainsRequiredInformationOutputGuardrail.NO_RESPONSE_PROMPT);
-		verifyNoMoreInteractions(this.guardrail);
+	@ParameterizedTest
+	@NullAndEmptySource
+	@ValueSource(strings = { "    " })
+	void invalidBody(String body) {
+		var json = new StringBuilder("{\"subject\": \"Claim Status Update\"");
+
+		if (body != null) {
+			json.append(", \"body\": \"").append(body).append("\"");
+		}
+
+		json.append("}");
+		var message = AiMessage.from(json.toString());
+
+		assertThat(this.guardrail.validate(message))
+			.hasResult(Result.FATAL)
+			.hasSingleFailureWithMessage(EmailContainsRequiredInformationOutputGuardrail.REPROMPT_MESSAGE.formatted("body"));
 	}
 
 	@ParameterizedTest
@@ -80,9 +104,7 @@ class EmailContainsRequiredInformationOutputGuardrailTests {
 			.hasResult(Result.FATAL)
 			.hasSingleFailureWithMessage(expectedRepromptMessage);
 
-		verify(this.guardrail).validate(params);
 		verify(this.guardrail).reprompt(expectedRepromptMessage, expectedRepromptPrompt);
-		verifyNoMoreInteractions(this.guardrail);
 	}
 
 	static Stream<Arguments> emailDoesntContainRequiredInfoParams() {
@@ -105,13 +127,13 @@ class EmailContainsRequiredInformationOutputGuardrailTests {
 		);
 	}
 
-	private static OutputGuardrailParams createParams(String response, String claimNumber, String claimStatus, String clientName) {
-		return createParams(response, new ClaimInfo(clientName, claimNumber, claimStatus));
+	private static OutputGuardrailParams createParams(String body, String claimNumber, String claimStatus, String clientName) {
+		return createParams(body, new ClaimInfo(clientName, claimNumber, claimStatus));
 	}
 
-	private static OutputGuardrailParams createParams(String response, ClaimInfo claimInfo) {
+	private static OutputGuardrailParams createParams(String body, ClaimInfo claimInfo) {
 		return new OutputGuardrailParams(
-			AiMessage.from(response),
+			AiMessage.from(JSON.formatted(body).replaceAll("\n", "\\\\n")),
 			null,
 			null,
 			null,

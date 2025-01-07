@@ -7,7 +7,6 @@ import java.util.concurrent.ForkJoinPool;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import org.ericoleg.ndnp.ai.GenerateEmailService.ClaimInfo;
 import org.ericoleg.ndnp.model.Claim;
 
 import io.quarkus.mailer.Mail;
@@ -31,9 +30,6 @@ public class NotificationService {
 
 	// Who the email is from
 	static final String MESSAGE_FROM = "noreply@parasol.com";
-
-	// Email subject
-	static final String MESSAGE_SUBJECT = "Update to your claim";
 
 	@Inject
 	ReactiveMailer mailer;
@@ -78,12 +74,11 @@ public class NotificationService {
 	}
 
 	private String sendEmail(Claim claim) {
+		// Create the email body
+		var emailDetails = this.generateEmailService.generateEmail(new ClaimInfo(claim.clientName, claim.claimNumber, claim.status));
+
 		// Create the email
-		var email = Mail.withText(
-			claim.emailAddress,
-				MESSAGE_SUBJECT,
-				this.generateEmailService.generateEmail(new ClaimInfo(claim.clientName, claim.claimNumber, claim.status))
-			)
+		var email = Mail.withText(claim.emailAddress, emailDetails.subject(), emailDetails.body())
 			.setFrom(MESSAGE_FROM);
 
 		// Send the email to the user

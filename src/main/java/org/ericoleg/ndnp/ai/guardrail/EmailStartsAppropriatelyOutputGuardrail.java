@@ -1,24 +1,37 @@
 package org.ericoleg.ndnp.ai.guardrail;
 
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import org.ericoleg.ndnp.ai.Email;
+
 import dev.langchain4j.data.message.AiMessage;
-import io.quarkiverse.langchain4j.guardrails.OutputGuardrail;
+import io.quarkiverse.langchain4j.guardrails.AbstractJsonExtractorOutputGuardrail;
 import io.quarkiverse.langchain4j.guardrails.OutputGuardrailResult;
 
+@Priority(8)
 @ApplicationScoped
-public class EmailStartsAppropriatelyOutputGuardrail implements OutputGuardrail {
-	static final String REPROMPT_MESSAGE = "Invalid email";
-	static final String REPROMPT_PROMPT = """
-		The response did not start with 'Dear'. Please try again.
-		
-		Only include the body of the email and make sure it starts appropriately.
-		""";
+public class EmailStartsAppropriatelyOutputGuardrail extends AbstractJsonExtractorOutputGuardrail {
+	static final String REPROMPT_MESSAGE = "Invalid email body";
+	static final String REPROMPT_PROMPT = "The email body did not start with 'Dear'. Please try again.";
 
 	@Override
 	public OutputGuardrailResult validate(AiMessage responseFromLLM) {
-		return responseFromLLM.text().startsWith("Dear ") ?
-		       success() :
-		       reprompt(REPROMPT_MESSAGE, REPROMPT_PROMPT);
+		var result = super.validate(responseFromLLM);
+
+		if (result.isSuccess()) {
+			var email = (Email) result.successfulResult();
+
+			return email.body().startsWith("Dear ") ?
+			       result :
+			       reprompt(REPROMPT_MESSAGE, REPROMPT_PROMPT);
+		}
+
+		return result;
+	}
+
+	@Override
+	protected Class<?> getOutputClass() {
+		return Email.class;
 	}
 }

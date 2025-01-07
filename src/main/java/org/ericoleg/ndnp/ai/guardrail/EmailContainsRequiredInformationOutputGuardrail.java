@@ -2,19 +2,22 @@ package org.ericoleg.ndnp.ai.guardrail;
 
 import java.util.Optional;
 
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 
-import org.ericoleg.ndnp.ai.GenerateEmailService.ClaimInfo;
+import org.ericoleg.ndnp.ai.ClaimInfo;
+import org.ericoleg.ndnp.ai.Email;
 
 import dev.langchain4j.data.message.AiMessage;
-import io.quarkiverse.langchain4j.guardrails.OutputGuardrail;
+import io.quarkiverse.langchain4j.guardrails.AbstractJsonExtractorOutputGuardrail;
 import io.quarkiverse.langchain4j.guardrails.OutputGuardrailParams;
 import io.quarkiverse.langchain4j.guardrails.OutputGuardrailResult;
 
+@Priority(10)
 @ApplicationScoped
-public class EmailContainsRequiredInformationOutputGuardrail implements OutputGuardrail {
-	static final String NO_RESPONSE_MESSAGE = "No response found";
-	static final String NO_RESPONSE_PROMPT = "The response was empty. Please try again.";
+public class EmailContainsRequiredInformationOutputGuardrail extends AbstractJsonExtractorOutputGuardrail {
+	static final String REPROMPT_MESSAGE = "Invalid email %s";
+	static final String REPROMPT_PROMPT = "Please provide an email %s that has at least one character";
 	static final String CLIENT_NAME_NOT_FOUND_MESSAGE = "Client name not found";
 	static final String CLIENT_NAME_NOT_FOUND_PROMPT = "The response did not contain the client name. Please include the client name \"%s\", exactly as is (case-sensitive), in the email body.";
 	static final String CLAIM_NUMBER_NOT_FOUND_MESSAGE = "Claim number not found";
@@ -24,33 +27,53 @@ public class EmailContainsRequiredInformationOutputGuardrail implements OutputGu
 
 	@Override
 	public OutputGuardrailResult validate(OutputGuardrailParams params) {
-		var claimInfo = Optional.ofNullable(params.variables())
-		                        .map(vars -> vars.get("claimInfo"))
-		                        .map(ClaimInfo.class::cast)
-		                        .orElse(null);
+		var result = super.validate(params);
 
-		if (claimInfo != null) {
-			var response = Optional.ofNullable(params.responseFromLLM())
-			                       .map(AiMessage::text)
-			                       .orElse("");
+		if (result.isSuccess()) {
+			var email = (Email) result.successfulResult();
+			var claimInfo = Optional.ofNullable(params.variables())
+			                        .map(vars -> (ClaimInfo) vars.get("claimInfo"))
+			                        .orElse(null);
 
-			if (response.isBlank()) {
-				return reprompt(NO_RESPONSE_MESSAGE, NO_RESPONSE_PROMPT);
-			}
+			if (claimInfo != null) {
+				if (!claimInfo.clientName().isBlank() && !email.body().contains(claimInfo.clientName())) {
+					return reprompt(CLIENT_NAME_NOT_FOUND_MESSAGE, CLIENT_NAME_NOT_FOUND_PROMPT.formatted(claimInfo.clientName()));
+				}
 
-			if (!claimInfo.clientName().isBlank() && !response.contains(claimInfo.clientName())) {
-				return reprompt(CLIENT_NAME_NOT_FOUND_MESSAGE, CLIENT_NAME_NOT_FOUND_PROMPT.formatted(claimInfo.clientName()));
-			}
+				if (!claimInfo.claimNumber().isBlank() && !StringUtils.containsIgnoreCase(email.body(), claimInfo.claimNumber())) {
+					return reprompt(CLAIM_NUMBER_NOT_FOUND_MESSAGE, CLAIM_NUMBER_NOT_FOUND_PROMPT.formatted(claimInfo.claimNumber()));
+				}
 
-			if (!claimInfo.claimNumber().isBlank() && !StringUtils.containsIgnoreCase(response, claimInfo.claimNumber())) {
-				return reprompt(CLAIM_NUMBER_NOT_FOUND_MESSAGE, CLAIM_NUMBER_NOT_FOUND_PROMPT.formatted(claimInfo.claimNumber()));
-			}
-
-			if (!claimInfo.claimStatus().isBlank() && !StringUtils.containsIgnoreCase(response, claimInfo.claimStatus())) {
-				return reprompt(CLAIM_STATUS_NOT_FOUND_MESSAGE, CLAIM_STATUS_NOT_FOUND_PROMPT.formatted(claimInfo.claimStatus()));
+				if (!claimInfo.claimStatus().isBlank() && !StringUtils.containsIgnoreCase(email.body(), claimInfo.claimStatus())) {
+					return reprompt(CLAIM_STATUS_NOT_FOUND_MESSAGE, CLAIM_STATUS_NOT_FOUND_PROMPT.formatted(claimInfo.claimStatus()));
+				}
 			}
 		}
 
-		return success();
+		return result;
+	}
+
+	@Override
+	public OutputGuardrailResult validate(AiMessage responseFromLLM) {
+		var result = super.validate(responseFromLLM);
+
+		if (result.isSuccess()) {
+			var email = (Email) result.successfulResult();
+
+			if ((email.subject() == null) || email.subject().isBlank()) {
+				return reprompt(REPROMPT_MESSAGE.formatted("subject"), REPROMPT_PROMPT.formatted("subject"));
+			}
+
+			if ((email.body() == null) || email.body().isBlank()) {
+				return reprompt(REPROMPT_MESSAGE.formatted("body"), REPROMPT_PROMPT.formatted("body"));
+			}
+		}
+
+		return result;
+	}
+
+	@Override
+	protected Class<?> getOutputClass() {
+		return Email.class;
 	}
 }

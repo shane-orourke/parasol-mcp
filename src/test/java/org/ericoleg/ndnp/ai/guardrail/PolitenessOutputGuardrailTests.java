@@ -1,41 +1,50 @@
 package org.ericoleg.ndnp.ai.guardrail;
 
 import static io.quarkiverse.langchain4j.guardrails.GuardrailAssertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectSpy;
+
 import dev.langchain4j.data.message.AiMessage;
 import io.quarkiverse.langchain4j.guardrails.GuardrailResult.Result;
 
+@QuarkusTest
 class PolitenessOutputGuardrailTests {
-	PolitenessService politenessService = mock(PolitenessService.class);
-	PolitenessOutputGuardrail guardrail = spy(new PolitenessOutputGuardrail(politenessService));
+	private static final String JSON = "{\"subject\": \"This is a subject\", \"body\": \"%s\"}";
+
+	@InjectMock
+	PolitenessService politenessService;
+
+	@InjectSpy
+	PolitenessOutputGuardrail guardrail;
 
 	@Test
 	void guardrailSuccess() {
-		var aiMessage = AiMessage.from("This is a polite response");
-		when(this.politenessService.isPolite(aiMessage.text()))
+		var body = "This is a polite response";;
+		var aiMessage = AiMessage.from(JSON.formatted(body));
+
+		when(this.politenessService.isPolite(body))
 			.thenReturn(true);
 
 		assertThat(this.guardrail.validate(aiMessage))
-			.isSuccessful();
+			.hasResult(Result.SUCCESS_WITH_RESULT);
 
-		verify(this.guardrail).validate(aiMessage);
-		verify(this.guardrail).success();
-		verify(this.politenessService).isPolite(aiMessage.text());
-		verifyNoMoreInteractions(this.guardrail, this.politenessService);
+		verify(this.politenessService).isPolite(body);
+		verifyNoMoreInteractions(this.politenessService);
 	}
 
 	@Test
 	void emailIsntPolite() {
-		var aiMessage = AiMessage.from("Hello. Claim number 1234 has been approved.");
+		var body = "Hello. Claim number 1234 has been approved.";
+		var aiMessage = AiMessage.from(JSON.formatted(body));
 
-		when(this.politenessService.isPolite(aiMessage.text()))
+		when(this.politenessService.isPolite(body))
 			.thenReturn(false);
 
 		var guardrailResult = this.guardrail.validate(aiMessage);
@@ -44,9 +53,8 @@ class PolitenessOutputGuardrailTests {
 			.hasResult(Result.FATAL)
 			.hasSingleFailureWithMessage(PolitenessOutputGuardrail.REPROMPT_MESSAGE);
 
-		verify(this.guardrail).validate(aiMessage);
 		verify(this.guardrail).reprompt(PolitenessOutputGuardrail.REPROMPT_MESSAGE, PolitenessOutputGuardrail.REPROMPT_PROMPT);
-		verify(this.politenessService).isPolite(aiMessage.text());
-		verifyNoMoreInteractions(this.guardrail, this.politenessService);
+		verify(this.politenessService).isPolite(body);
+		verifyNoMoreInteractions(this.politenessService);
 	}
 }

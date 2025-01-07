@@ -65,14 +65,8 @@ class NotificationServiceTests {
 			assertThat(message)
 				.isNotNull()
 				.get()
-				.extracting(
-					Message::getSubject,
-					m -> m.getTo().getFirst().getAddress()
-				)
-				.containsExactly(
-					NotificationService.MESSAGE_SUBJECT,
-					claim.emailAddress
-				);
+				.extracting(m -> m.getTo().getFirst().getAddress())
+				.isEqualTo(claim.emailAddress);
 
 			// Assert that the message has the correct info in the body
 			assertThat(message.get().getText().strip())
