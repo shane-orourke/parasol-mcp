@@ -5,9 +5,10 @@ import org.ericoleg.ndnp.ai.guardrail.CompositeOutputGuardrail;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import io.quarkiverse.langchain4j.RegisterAiService;
+import io.quarkiverse.langchain4j.RegisterAiService.NoRetrievalAugmentorSupplier;
 import io.quarkiverse.langchain4j.guardrails.OutputGuardrails;
 
-@RegisterAiService(modelName = "generate-email")
+@RegisterAiService(modelName = "generate-email", retrievalAugmentor = NoRetrievalAugmentorSupplier.class)
 public interface GenerateEmailService {
 	String EMAIL_STARTING = "Dear ";
 	String EMAIL_ENDING = """

@@ -3,8 +3,9 @@ package org.ericoleg.ndnp.ai.guardrail;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import io.quarkiverse.langchain4j.RegisterAiService;
+import io.quarkiverse.langchain4j.RegisterAiService.NoRetrievalAugmentorSupplier;
 
-@RegisterAiService(modelName = "politeness")
+@RegisterAiService(modelName = "politeness", retrievalAugmentor = NoRetrievalAugmentorSupplier.class)
 public interface PolitenessService {
 	@SystemMessage("""
 		You are a detector that determines whether or not a message is polite and respectful.

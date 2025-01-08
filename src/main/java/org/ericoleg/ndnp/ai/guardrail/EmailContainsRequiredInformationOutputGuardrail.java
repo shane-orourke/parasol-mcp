@@ -19,11 +19,11 @@ public class EmailContainsRequiredInformationOutputGuardrail extends AbstractJso
 	static final String REPROMPT_MESSAGE = "Invalid email %s";
 	static final String REPROMPT_PROMPT = "Please provide an email %s that has at least one character";
 	static final String CLIENT_NAME_NOT_FOUND_MESSAGE = "Client name not found";
-	static final String CLIENT_NAME_NOT_FOUND_PROMPT = "The response did not contain the client name. Please include the client name \"%s\", exactly as is (case-sensitive), in the email body.";
+	static final String CLIENT_NAME_NOT_FOUND_PROMPT = "The email body did not contain the client name. Please include the client name \"%s\", exactly as is (case-sensitive), in the email body.";
 	static final String CLAIM_NUMBER_NOT_FOUND_MESSAGE = "Claim number not found";
-	static final String CLAIM_NUMBER_NOT_FOUND_PROMPT = "The response did not contain the claim number. Please include the claim number \"%s\", exactly as is (case-sensitive), in the email body.";
+	static final String CLAIM_NUMBER_NOT_FOUND_PROMPT = "The email body did not contain the claim number. Please include the claim number \"%s\", exactly as is (case-sensitive), in the email body.";
 	static final String CLAIM_STATUS_NOT_FOUND_MESSAGE = "Claim status not found";
-	static final String CLAIM_STATUS_NOT_FOUND_PROMPT = "The response did not contain the claim status. Please include the claim status \"%s\", exactly as is (case-sensitive), in the email body.";
+	static final String CLAIM_STATUS_NOT_FOUND_PROMPT = "The email body did not contain the claim status. Please include the claim status \"%s\", exactly as is (case-sensitive), in the email body.";
 
 	@Override
 	public OutputGuardrailResult validate(OutputGuardrailParams params) {
