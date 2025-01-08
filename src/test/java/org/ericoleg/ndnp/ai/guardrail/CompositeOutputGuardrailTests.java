@@ -108,7 +108,7 @@ class CompositeOutputGuardrailTests {
 			.validate(PARAMS);
 
 		assertThat(this.compositeOutputGuardrail.validate(PARAMS))
-			.hasResult(Result.SUCCESS_WITH_RESULT)
+			.isSuccessful()
 			.extracting(
 				OutputGuardrailResult::successfulText,
 				OutputGuardrailResult::successfulResult
@@ -135,7 +135,7 @@ class CompositeOutputGuardrailTests {
 			.validate(PARAMS);
 
 		assertThat(this.compositeOutputGuardrail.validate(PARAMS))
-			.hasResult(Result.SUCCESS_WITH_RESULT)
+			.isSuccessful()
 			.extracting(
 				OutputGuardrailResult::successfulText,
 				OutputGuardrailResult::successfulResult
@@ -162,7 +162,7 @@ class CompositeOutputGuardrailTests {
 			.validate(PARAMS);
 
 		assertThat(this.compositeOutputGuardrail.validate(PARAMS))
-			.hasResult(Result.SUCCESS_WITH_RESULT)
+			.isSuccessful()
 			.extracting(
 				OutputGuardrailResult::successfulText,
 				OutputGuardrailResult::successfulResult

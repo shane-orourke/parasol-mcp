@@ -29,7 +29,7 @@ class EmailEndsAppropriatelyOutputGuardrailTests {
 		var aiMessage = AiMessage.from(json);
 
 		assertThat(this.guardrail.validate(aiMessage))
-			.hasResult(Result.SUCCESS_WITH_RESULT);
+			.isSuccessful();
 	}
 
 	@Test

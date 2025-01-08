@@ -54,7 +54,7 @@ class EmailContainsRequiredInformationOutputGuardrailTests {
 		var params = createParams(body, CLAIM_NUMBER, CLAIM_STATUS, CLIENT_NAME);
 
 		assertThat(this.guardrail.validate(params))
-			.hasResult(Result.SUCCESS_WITH_RESULT);
+			.isSuccessful();
 	}
 
 	@ParameterizedTest

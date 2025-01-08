@@ -33,7 +33,7 @@ class PolitenessOutputGuardrailTests {
 			.thenReturn(true);
 
 		assertThat(this.guardrail.validate(aiMessage))
-			.hasResult(Result.SUCCESS_WITH_RESULT);
+			.isSuccessful();
 
 		verify(this.politenessService).isPolite(body);
 		verifyNoMoreInteractions(this.politenessService);

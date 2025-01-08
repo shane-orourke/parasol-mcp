@@ -23,7 +23,7 @@ class EmailStartsAppropriatelyOutputGuardrailTests {
 		var aiMessage = AiMessage.from(JSON.formatted("Dear John,"));
 
 		assertThat(this.guardrail.validate(aiMessage))
-			.hasResult(Result.SUCCESS_WITH_RESULT);
+			.isSuccessful();
 	}
 
 	@Test
