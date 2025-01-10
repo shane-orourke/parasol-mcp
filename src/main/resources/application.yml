@@ -137,6 +137,8 @@ quarkus:
             model-name: "${quarkus.langchain4j.ollama.parasol-chat.chat-model.model-id}"
         embedding-model:
           model-name: "${quarkus.langchain4j.ollama.embedding-model.model-id}"
+      milvus:
+        dimension: 1024
 
 # Dev mode config
 '%dev':
