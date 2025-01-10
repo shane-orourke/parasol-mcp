@@ -6,12 +6,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 import org.ericoleg.ndnp.ai.Email;
 
 import dev.langchain4j.data.message.AiMessage;
-import io.quarkiverse.langchain4j.guardrails.AbstractJsonExtractorOutputGuardrail;
 import io.quarkiverse.langchain4j.guardrails.OutputGuardrailResult;
 
 @Priority(8)
 @ApplicationScoped
-public class EmailStartsAppropriatelyOutputGuardrail extends AbstractJsonExtractorOutputGuardrail {
+public class EmailStartsAppropriatelyOutputGuardrail extends GenerateEmailOutputGuardrail {
 	static final String REPROMPT_MESSAGE = "Invalid email body";
 	static final String REPROMPT_PROMPT = "The email body did not start with 'Dear'. Please try again.";
 

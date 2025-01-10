@@ -9,13 +9,12 @@ import org.ericoleg.ndnp.ai.ClaimInfo;
 import org.ericoleg.ndnp.ai.Email;
 
 import dev.langchain4j.data.message.AiMessage;
-import io.quarkiverse.langchain4j.guardrails.AbstractJsonExtractorOutputGuardrail;
 import io.quarkiverse.langchain4j.guardrails.OutputGuardrailParams;
 import io.quarkiverse.langchain4j.guardrails.OutputGuardrailResult;
 
 @Priority(10)
 @ApplicationScoped
-public class EmailContainsRequiredInformationOutputGuardrail extends AbstractJsonExtractorOutputGuardrail {
+public class EmailContainsRequiredInformationOutputGuardrail extends GenerateEmailOutputGuardrail {
 	static final String REPROMPT_MESSAGE = "Invalid email %s";
 	static final String REPROMPT_PROMPT = "Please provide an email %s that has at least one character";
 	static final String CLIENT_NAME_NOT_FOUND_MESSAGE = "Client name not found";

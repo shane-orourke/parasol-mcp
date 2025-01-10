@@ -7,12 +7,11 @@ import org.ericoleg.ndnp.ai.Email;
 import org.ericoleg.ndnp.ai.GenerateEmailService;
 
 import dev.langchain4j.data.message.AiMessage;
-import io.quarkiverse.langchain4j.guardrails.AbstractJsonExtractorOutputGuardrail;
 import io.quarkiverse.langchain4j.guardrails.OutputGuardrailResult;
 
 @Priority(6)
 @ApplicationScoped
-public class EmailEndsAppropriatelyOutputGuardrail extends AbstractJsonExtractorOutputGuardrail {
+public class EmailEndsAppropriatelyOutputGuardrail extends GenerateEmailOutputGuardrail {
 	static final String REPROMPT_MESSAGE = "Invalid email body";
 	static final String REPROMPT_PROMPT = """
 		The email body did not end properly. Please try again.

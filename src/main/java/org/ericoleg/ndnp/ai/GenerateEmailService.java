@@ -21,6 +21,14 @@ public interface GenerateEmailService {
 		Should you choose to reply, nobody (not even an AI bot) will see your message.
 		Call a real human should you have any questions. 1-800-CAR-SAFE.""";
 
+	String JSON_STRUCTURE = """
+		Please return a JSON response with the following structure:
+		{
+		  "subject": "string",
+			"body": "string"
+		}
+		""";
+
 	@SystemMessage("""
 		You are a helpful, respectful, and honest assistant named "Parasol Assistant".
 		
@@ -29,11 +37,7 @@ public interface GenerateEmailService {
 		Your role is to generate business professional emails, with a subject, for clients notifying them of changes in their claim status.
 		Be polite and concise.
 		
-		You will always return a JSON response with the following structure:
-		{
-		  "subject": "string",
-			"body": "string"
-		}
+		""" + JSON_STRUCTURE + """
 		
 		Please ONLY include the JSON. Do NOT begin the response with things like:
 		- Here is your JSON 
