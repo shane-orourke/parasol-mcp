@@ -27,7 +27,7 @@ public class AIAudit extends Audit {
 
 	@Override
 	public void initialMessages(Optional<SystemMessage> systemMessage, UserMessage userMessage) {
-		Log.infof("[%s - %s] Initial messages: systemMessage=%s, userMessage=%s", this.method, this.id, systemMessage, userMessage);
+		Log.infof("[%s - %s] Initial messages: systemMessage=%s, userMessage=%s", this.method, this.id, systemMessage.map(SystemMessage::text).orElse(""), userMessage);
 	}
 
 	@Override
