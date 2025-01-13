@@ -2,6 +2,7 @@ package org.ericoleg.ndnp.ui;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.ericoleg.ndnp.ui.PlaywrightTests.RECORD_DIR;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -20,12 +21,12 @@ import io.quarkiverse.quinoa.testing.QuinoaTestProfiles;
 
 @QuarkusTest
 @TestProfile(QuinoaTestProfiles.Enable.class)
-@WithPlaywright
+@WithPlaywright(recordVideoDir = RECORD_DIR, slowMo = 500)
 public class ClaimsDetailPageTests extends PlaywrightTests {
 	@Test
 	void pageLoads() {
 		var claim = Claim.<Claim>findAll().firstResultOptional().orElseThrow(() -> new IllegalArgumentException("Can not find a claim in the database to use for tests"));
-		var page = loadPage(claim);
+		var page = loadPage(claim, "%s_pageLoads".formatted(getClass().getSimpleName()));
 
 		PlaywrightAssertions.assertThat(page)
 			.hasTitle("Claim Detail");
@@ -87,7 +88,7 @@ public class ClaimsDetailPageTests extends PlaywrightTests {
 		return page.locator(".chat-answer-text");
 	}
 
-	private Page loadPage(Claim claim) {
-		return loadPage("ClaimDetail/%d".formatted(claim.id));
+	private Page loadPage(Claim claim, String testName) {
+		return loadPage("ClaimDetail/%d".formatted(claim.id), testName);
 	}
 }

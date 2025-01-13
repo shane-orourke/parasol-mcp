@@ -1,6 +1,7 @@
 package org.ericoleg.ndnp.ui;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.ericoleg.ndnp.ui.PlaywrightTests.RECORD_DIR;
 
 import java.util.List;
 
@@ -19,13 +20,13 @@ import io.quarkiverse.quinoa.testing.QuinoaTestProfiles;
 
 @QuarkusTest
 @TestProfile(QuinoaTestProfiles.Enable.class)
-@WithPlaywright
+@WithPlaywright(recordVideoDir = RECORD_DIR, slowMo = 500)
 public class ClaimsListPageTests extends PlaywrightTests {
 	private static final int NB_CLAIMS = 6;
 
 	@Test
 	void pageLoads() {
-		var page = loadPage();
+		var page = loadPage("%s_pageLoads".formatted(getClass().getSimpleName()));
 
 		PlaywrightAssertions.assertThat(page)
 			.hasTitle("Claims List");
@@ -33,7 +34,7 @@ public class ClaimsListPageTests extends PlaywrightTests {
 
 	@Test
 	void correctTable() {
-		var table = getAndVerifyClaimsTable(NB_CLAIMS);
+		var table = getAndVerifyClaimsTable(NB_CLAIMS, "%s_correctTable".formatted(getClass().getSimpleName()));
 		var tableColumns = table.getByRole(AriaRole.COLUMNHEADER).all();
 
 		assertThat(tableColumns)
@@ -114,11 +115,11 @@ public class ClaimsListPageTests extends PlaywrightTests {
 		return table;
 	}
 
-	private Locator getAndVerifyClaimsTable(int expectedNumRows) {
-		return getAndVerifyClaimsTable(loadPage(), expectedNumRows);
+	private Locator getAndVerifyClaimsTable(int expectedNumRows, String testName) {
+		return getAndVerifyClaimsTable(loadPage(testName), expectedNumRows);
 	}
 
-	private Page loadPage() {
-		return loadPage("ClaimsList");
+	private Page loadPage(String testName) {
+		return loadPage("ClaimsList", testName);
 	}
 }
