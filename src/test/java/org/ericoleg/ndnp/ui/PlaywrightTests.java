@@ -1,6 +1,7 @@
 package org.ericoleg.ndnp.ui;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.ericoleg.ndnp.ui.PlaywrightTests.RECORD_DIR;
 
 import java.nio.file.Files;
 
@@ -13,8 +14,10 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Response;
 import com.microsoft.playwright.options.LoadState;
 import io.quarkiverse.playwright.InjectPlaywright;
+import io.quarkiverse.playwright.WithPlaywright;
 
-public abstract class PlaywrightTests {
+@WithPlaywright(recordVideoDir = RECORD_DIR, slowMo = 500)
+abstract class PlaywrightTests {
 	protected static final String RECORD_DIR = "target/playwright";
 
 	@InjectPlaywright

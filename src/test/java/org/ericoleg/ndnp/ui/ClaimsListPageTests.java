@@ -1,12 +1,11 @@
 package org.ericoleg.ndnp.ui;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.ericoleg.ndnp.ui.PlaywrightTests.RECORD_DIR;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
 import org.ericoleg.ndnp.model.Claim;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
@@ -15,12 +14,10 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.assertions.PlaywrightAssertions;
 import com.microsoft.playwright.options.AriaRole;
-import io.quarkiverse.playwright.WithPlaywright;
 import io.quarkiverse.quinoa.testing.QuinoaTestProfiles;
 
 @QuarkusTest
 @TestProfile(QuinoaTestProfiles.Enable.class)
-@WithPlaywright(recordVideoDir = RECORD_DIR, slowMo = 500)
 public class ClaimsListPageTests extends PlaywrightTests {
 	private static final int NB_CLAIMS = 6;
 
