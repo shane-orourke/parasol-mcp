@@ -8,6 +8,7 @@ import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import io.quarkiverse.langchain4j.RegisterAiService;
 import io.quarkiverse.langchain4j.ToolBox;
+import io.smallrye.mutiny.Multi;
 
 @RegisterAiService(modelName = "parasol-chat")
 @SessionScoped
@@ -38,6 +39,6 @@ public interface ClaimService {
     // See https://github.com/langchain4j/langchain4j/issues/2289
     // If we don't care about Ollama via OpenAI, then we can switch to streaming
     @ToolBox(NotificationService.class)
-    String chat(ClaimBotQuery query);
-//    Multi<String> chat(ClaimBotQuery query);
+//    String chat(ClaimBotQuery query);
+    Multi<String> chat(ClaimBotQuery query);
 }
