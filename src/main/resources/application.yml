@@ -95,6 +95,8 @@ quarkus:
   otel:
     logs:
       enabled: true
+    metrics:
+      enabled: true
   datasource:
     jdbc:
       telemetry: true
