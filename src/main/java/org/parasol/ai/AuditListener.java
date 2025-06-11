@@ -6,8 +6,10 @@ import jakarta.enterprise.event.Observes;
 import io.quarkus.logging.Log;
 
 import io.quarkiverse.langchain4j.audit.InitialMessagesCreatedEvent;
+import io.quarkiverse.langchain4j.audit.InputGuardrailExecutedEvent;
 import io.quarkiverse.langchain4j.audit.LLMInteractionCompleteEvent;
 import io.quarkiverse.langchain4j.audit.LLMInteractionFailureEvent;
+import io.quarkiverse.langchain4j.audit.OutputGuardrailExecutedEvent;
 import io.quarkiverse.langchain4j.audit.ResponseFromLLMReceivedEvent;
 import io.quarkiverse.langchain4j.audit.ToolExecutedEvent;
 
@@ -55,4 +57,20 @@ public class AuditListener {
 	    e.result()
     );
   }
+
+	public void inputGuardrailExecuted(@Observes InputGuardrailExecutedEvent e) {
+		Log.infof(
+			"Input guardrail executed:\nuserMessage: %s\nresult: %s",
+			e.rewrittenUserMessage().singleText(),
+			e.result().result()
+		);
+	}
+
+	public void outputGuardrailExecuted(@Observes OutputGuardrailExecutedEvent e) {
+		Log.infof(
+			"Output guardrail executed:\nresponseFromLLM:%s\nresult: %s",
+			e.params().responseFromLLM().text(),
+			e.result().result()
+		);
+	}
 }

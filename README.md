@@ -1,3 +1,7 @@
+# App Architecture
+
+![architecture](images/arch.png)
+
 # Using Ollama
 If you would like to use [Ollama](https://ollama.com/) instead, first install/run Ollama on your machine. Then do one of the following:
 
