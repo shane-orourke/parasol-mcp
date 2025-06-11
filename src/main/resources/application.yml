@@ -175,7 +175,6 @@ quarkus:
 '%prod':
   quarkus:
     hibernate-orm:
-      database:
-        database:
-          generation: drop-and-create
       sql-load-script: import.sql
+      schema-management:
+        strategy: drop-and-create
