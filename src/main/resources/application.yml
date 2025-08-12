@@ -11,7 +11,8 @@ quarkus:
 
     # RAG
     easy-rag:
-      path: src/main/resources/policies
+      path: policies
+      path-type: classpath
       reuse-embeddings:
         enabled: true
 
@@ -43,17 +44,17 @@ quarkus:
       parasol-chat:
         timeout: 600s
         chat-model:
-          model-id: llama3.2
+          model-id: qwen3:4b
           temperature: 0.3
       generate-email:
         timeout: 600s
         chat-model:
-          model-id: llama3.2
+          model-id: qwen3:4b
           temperature: 0.3
       politeness:
         timeout: 600s
         chat-model:
-          model-id: llama3.2
+          model-id: qwen3:4b
           temperature: 0.3
       embedding-model:
         model-id: snowflake-arctic-embed
@@ -65,7 +66,7 @@ quarkus:
   # HTTP
   http:
     cors:
-      ~: true
+      enabled: true
       origins: '*'
   dev-ui:
     cors:
@@ -83,8 +84,8 @@ quarkus:
     enable-spa-routing: true
     package-manager-install:
       ~: true
-      node-version: 22.12.0
-      npm-version: 10.9.2
+      node-version: 22.18.0
+      npm-version: 10.9.3
 
   # Websockets
   websockets-next:
