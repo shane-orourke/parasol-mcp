@@ -8,6 +8,8 @@ import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 
+import io.quarkus.opentelemetry.runtime.config.build.OTelBuildConfig;
+
 import dev.langchain4j.model.chat.response.ChatResponseMetadata;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -25,10 +27,12 @@ import io.quarkiverse.langchain4j.audit.ToolExecutedEvent;
 @Interceptor
 @Priority(Interceptor.Priority.APPLICATION + 200)
 public class AuditingObservabilityInterceptor {
+	private final OTelBuildConfig otelConfig;
 	private final Meter meter;
 	private final Tracer tracer;
 
-	public AuditingObservabilityInterceptor(Meter meter, Tracer tracer) {
+	public AuditingObservabilityInterceptor(OTelBuildConfig otelConfig, Meter meter, Tracer tracer) {
+		this.otelConfig = otelConfig;
 		this.meter = meter;
 		this.tracer = tracer;
 	}
@@ -37,37 +41,50 @@ public class AuditingObservabilityInterceptor {
 	public Object invoke(InvocationContext context) throws Exception {
 		var auditObservedAnnotation = getAuditObservedAnnotation(context);
 
-		if (auditObservedAnnotation.isPresent()) {
-			var auditObserved = auditObservedAnnotation.get();
-			var interactionEvent = getInteractionEvent(context);
-			var sourceInfo = interactionEvent.map(LLMInteractionEvent::sourceInfo).orElseThrow();
-			var spanAttributes = Attributes.builder()
-			                               .put("arg.interfaceName", sourceInfo.interfaceName())
-			                               .put("arg.methodName", sourceInfo.methodName());
-			var metricAttributes = Attributes.builder()
-			                                 .put("interfaceName", sourceInfo.interfaceName())
-			                                 .put("methodName", sourceInfo.methodName());
+		return (isOtelEnabled() && auditObservedAnnotation.isPresent()) ?
+		       wrap(context, auditObservedAnnotation.get()) :
+		       context.proceed();
+	}
 
-			interactionEvent.filter(event -> event instanceof ToolExecutedEvent)
-			                .map(ToolExecutedEvent.class::cast)
-			                .map(event -> event.request().name())
-			                .ifPresent(toolName -> {
-				                spanAttributes.put("arg.toolName", toolName);
-				                metricAttributes.put("toolName", toolName);
-			                });
+	private boolean isOtelEnabled() {
+		return this.otelConfig.enabled();
+	}
 
-			var span = this.tracer.spanBuilder(auditObserved.name())
-			                      .setParent(Context.current().with(Span.current()))
-			                      .setSpanKind(SpanKind.INTERNAL)
-			                      .setAllAttributes(spanAttributes.build())
-			                      .startSpan();
+	private boolean isOtelMetricsEnabled() {
+		return isOtelEnabled() && this.otelConfig.metrics().enabled().orElse(false);
+	}
 
-			try {
-				return context.proceed();
-			}
-			finally {
-				span.end();
+	private Object wrap(InvocationContext context, AuditObserved auditObserved) throws Exception {
+		var interactionEvent = getInteractionEvent(context);
+		var sourceInfo = interactionEvent.map(LLMInteractionEvent::sourceInfo).orElseThrow();
+		var spanAttributes = Attributes.builder()
+		                               .put("arg.interfaceName", sourceInfo.interfaceName())
+		                               .put("arg.methodName", sourceInfo.methodName());
+		var metricAttributes = Attributes.builder()
+		                                 .put("interfaceName", sourceInfo.interfaceName())
+		                                 .put("methodName", sourceInfo.methodName());
 
+		interactionEvent.filter(event -> event instanceof ToolExecutedEvent)
+		                .map(ToolExecutedEvent.class::cast)
+		                .map(event -> event.request().name())
+		                .ifPresent(toolName -> {
+			                spanAttributes.put("arg.toolName", toolName);
+			                metricAttributes.put("toolName", toolName);
+		                });
+
+		var span = this.tracer.spanBuilder(auditObserved.name())
+		                      .setParent(Context.current().with(Span.current()))
+		                      .setSpanKind(SpanKind.INTERNAL)
+		                      .setAllAttributes(spanAttributes.build())
+		                      .startSpan();
+
+		try {
+			return context.proceed();
+		}
+		finally {
+			span.end();
+
+			if (isOtelMetricsEnabled()) {
 				addToCounter(
 					auditObserved.name(),
 					auditObserved.description(),
@@ -81,8 +98,6 @@ public class AuditingObservabilityInterceptor {
 				                .ifPresent(this::addToTotalTokenCount);
 			}
 		}
-
-		return context.proceed();
 	}
 
 	private Optional<LLMInteractionEvent> getInteractionEvent(InvocationContext context) {
@@ -116,23 +131,28 @@ public class AuditingObservabilityInterceptor {
 
 	private void addToTotalTokenCount(ChatResponseMetadata metadata) {
 		var modelNameAttributes = Attributes.of(AttributeKey.stringKey("modelName"), metadata.modelName());
-
-		this.meter.counterBuilder("parasol.llm.token.input.count")
+		var inputTokenCounter = this.meter.counterBuilder("parasol.llm.token.input.count")
 		          .setDescription("Total input token count")
 		          .setUnit("tokens")
-		          .build()
-		          .add(metadata.tokenUsage().inputTokenCount(), modelNameAttributes);
+		          .build();
 
-		this.meter.counterBuilder("parasol.llm.token.output.count")
+		inputTokenCounter.add(metadata.tokenUsage().inputTokenCount(), modelNameAttributes);
+		inputTokenCounter.add(metadata.tokenUsage().inputTokenCount());
+
+		var outputTokenCounter = this.meter.counterBuilder("parasol.llm.token.output.count")
 		          .setDescription("Total output token count")
 		          .setUnit("tokens")
-		          .build()
-		          .add(metadata.tokenUsage().outputTokenCount(), modelNameAttributes);
+		          .build();
 
-		this.meter.counterBuilder("parasol.llm.token.total.count")
+		outputTokenCounter.add(metadata.tokenUsage().outputTokenCount(), modelNameAttributes);
+		outputTokenCounter.add(metadata.tokenUsage().outputTokenCount());
+
+		var totalTokenCounter = this.meter.counterBuilder("parasol.llm.token.total.count")
 		          .setDescription("Total token count")
 		          .setUnit("tokens")
-		          .build()
-		          .add(metadata.tokenUsage().totalTokenCount(), modelNameAttributes);
+		          .build();
+
+		totalTokenCounter.add(metadata.tokenUsage().totalTokenCount(), modelNameAttributes);
+		totalTokenCounter.add(metadata.tokenUsage().totalTokenCount());
 	}
 }
