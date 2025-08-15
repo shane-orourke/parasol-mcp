@@ -1,4 +1,4 @@
-package org.parasol.repository;
+package org.parasol.ai.audit;
 
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;

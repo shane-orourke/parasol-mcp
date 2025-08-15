@@ -1,4 +1,4 @@
-package org.parasol.repository;
+package org.parasol.ai.audit;
 
 import java.util.Arrays;
 import java.util.Optional;

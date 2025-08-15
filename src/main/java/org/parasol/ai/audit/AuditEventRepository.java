@@ -1,4 +1,4 @@
-package org.parasol.repository;
+package org.parasol.ai.audit;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
