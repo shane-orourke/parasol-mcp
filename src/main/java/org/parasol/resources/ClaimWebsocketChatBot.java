@@ -1,8 +1,8 @@
 package org.parasol.resources;
 
 import org.parasol.ai.ClaimService;
-import org.parasol.model.ClaimBotQuery;
-import org.parasol.model.ClaimBotQueryResponse;
+import org.parasol.model.claim.ClaimBotQuery;
+import org.parasol.model.claim.ClaimBotQueryResponse;
 
 import io.quarkus.logging.Log;
 import io.quarkus.websockets.next.OnClose;

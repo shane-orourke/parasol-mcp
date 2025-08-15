@@ -1,4 +1,4 @@
-package org.parasol.model;
+package org.parasol.model.claim;
 
 import java.time.LocalDate;
 

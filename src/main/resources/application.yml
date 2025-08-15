@@ -77,6 +77,9 @@ quarkus:
   # Hibernate
   hibernate-orm:
     physical-naming-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    mapping:
+      format:
+        global: ignore
 
   # Quinoa
   quinoa:

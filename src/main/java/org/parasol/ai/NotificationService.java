@@ -7,7 +7,7 @@ import java.util.concurrent.ForkJoinPool;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import org.parasol.model.Claim;
+import org.parasol.model.claim.Claim;
 
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.reactive.ReactiveMailer;

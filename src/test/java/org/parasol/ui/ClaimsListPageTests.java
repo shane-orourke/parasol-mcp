@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import org.parasol.model.Claim;
 import org.junit.jupiter.api.Test;
+import org.parasol.model.claim.Claim;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;

@@ -2,7 +2,7 @@ package org.parasol.ai;
 
 import jakarta.enterprise.context.SessionScoped;
 
-import org.parasol.model.ClaimBotQuery;
+import org.parasol.model.claim.ClaimBotQuery;
 
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;

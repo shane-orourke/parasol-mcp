@@ -8,12 +8,12 @@ import java.util.Optional;
 
 import jakarta.inject.Inject;
 
-import org.parasol.model.Claim;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.parasol.model.claim.Claim;
 
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.TestTransaction;

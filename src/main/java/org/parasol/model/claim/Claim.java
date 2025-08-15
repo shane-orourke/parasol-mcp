@@ -1,12 +1,10 @@
-package org.parasol.model;
+package org.parasol.model.claim;
 
 import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
@@ -22,7 +20,6 @@ public class Claim extends PanacheEntity {
     public String policyNumber;
 
     @Column(columnDefinition="DATETIME")
-    @Temporal(TemporalType.DATE)
     public LocalDate inceptionDate;
     public String clientName;
     public String subject;

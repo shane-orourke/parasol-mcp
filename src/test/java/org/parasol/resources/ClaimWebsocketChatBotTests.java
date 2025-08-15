@@ -18,13 +18,13 @@ import java.util.stream.Collectors;
 
 import jakarta.inject.Inject;
 
-import org.parasol.ai.ClaimService;
-import org.parasol.model.ClaimBotQuery;
-import org.parasol.model.ClaimBotQueryResponse;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
+import org.parasol.ai.ClaimService;
+import org.parasol.model.claim.ClaimBotQuery;
+import org.parasol.model.claim.ClaimBotQueryResponse;
 
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.http.TestHTTPResource;

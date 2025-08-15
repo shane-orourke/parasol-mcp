@@ -2,7 +2,8 @@ package org.parasol.resources;
 
 import static io.restassured.RestAssured.get;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.blankOrNullString;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.junit.jupiter.api.Test;
-import org.parasol.model.Claim;
+import org.parasol.model.claim.Claim;
 
 import io.quarkus.panache.mock.PanacheMock;
 import io.quarkus.test.junit.QuarkusTest;

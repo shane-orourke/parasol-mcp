@@ -6,8 +6,8 @@ import static org.awaitility.Awaitility.await;
 import java.time.Duration;
 import java.util.Optional;
 
-import org.parasol.model.Claim;
 import org.junit.jupiter.api.Test;
+import org.parasol.model.claim.Claim;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;

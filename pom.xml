@@ -7,6 +7,7 @@
 	<properties>
 		<assertj.version>3.27.4</assertj.version>
 		<compiler-plugin.version>3.14.0</compiler-plugin.version>
+		<mapstruct.version>1.6.3</mapstruct.version>
 		<maven.compiler.release>21</maven.compiler.release>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -98,11 +99,11 @@
 			<groupId>io.opentelemetry.instrumentation</groupId>
 			<artifactId>opentelemetry-jdbc</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>io.quarkus</groupId>
-			<artifactId>quarkus-observability-devservices-lgtm</artifactId>
-			<scope>provided</scope>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>io.quarkus</groupId>-->
+<!--			<artifactId>quarkus-observability-devservices-lgtm</artifactId>-->
+<!--			<scope>provided</scope>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>io.quarkus</groupId>
 			<artifactId>quarkus-micrometer-opentelemetry</artifactId>
@@ -119,6 +120,11 @@
 		<dependency>
 			<groupId>io.quarkus</groupId>
 			<artifactId>quarkus-config-yaml</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct</artifactId>
+			<version>${mapstruct.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.quarkus</groupId>
@@ -215,9 +221,14 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>${compiler-plugin.version}</version>
 				<configuration>
-					<compilerArgs>
-						<arg>-parameters</arg>
-					</compilerArgs>
+					<parameters>true</parameters>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${mapstruct.version}</version>
+						</path>
+					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
 			<plugin>
