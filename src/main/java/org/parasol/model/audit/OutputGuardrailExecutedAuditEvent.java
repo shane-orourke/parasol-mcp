@@ -7,10 +7,10 @@ import jakarta.persistence.Entity;
 @Entity
 @DiscriminatorValue("OUTPUT_GUARDRAIL_EXECUTED")
 public class OutputGuardrailExecutedAuditEvent extends AuditEvent {
-	@Column(updatable = false)
+	@Column(updatable = false, columnDefinition = "TEXT")
 	private String response;
 
-	@Column(updatable = false)
+	@Column(updatable = false, columnDefinition = "TEXT")
 	private String result;
 
 	@Column(updatable = false)

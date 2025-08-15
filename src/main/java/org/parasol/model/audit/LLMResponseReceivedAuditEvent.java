@@ -7,7 +7,7 @@ import jakarta.persistence.Entity;
 @Entity
 @DiscriminatorValue("LLM_RESPONSE_RECEIVED")
 public class LLMResponseReceivedAuditEvent extends AuditEvent {
-	@Column(updatable = false)
+	@Column(updatable = false, columnDefinition = "TEXT")
 	private String response;
 
 	@Column(updatable = false)

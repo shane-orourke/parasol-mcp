@@ -13,7 +13,7 @@ public class InputGuardrailExecutedAuditEvent extends AuditEvent {
 	@Column(updatable = false)
 	private String rewrittenUserMessage;
 
-	@Column(updatable = false)
+	@Column(updatable = false, columnDefinition = "TEXT")
 	private String result;
 
 	@Column(updatable = false)

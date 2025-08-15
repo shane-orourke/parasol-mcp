@@ -10,10 +10,10 @@ public class ToolExecutedAuditEvent extends AuditEvent {
 	@Column(updatable = false)
 	private String toolName;
 
-	@Column(updatable = false)
+	@Column(updatable = false, columnDefinition = "TEXT")
 	private String toolArgs;
 
-	@Column(updatable = false)
+	@Column(updatable = false, columnDefinition = "TEXT")
 	private String result;
 
 	protected ToolExecutedAuditEvent() {
