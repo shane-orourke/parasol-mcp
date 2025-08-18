@@ -1,24 +1,28 @@
 package org.parasol.mapping;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
-import jakarta.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingConstants.ComponentModel;
 import org.parasol.model.audit.AuditSource;
 import org.parasol.model.audit.InputGuardrailExecutedAuditEvent;
+import org.parasol.model.audit.LLMInitialMessagesCreatedAuditEvent;
 import org.parasol.model.audit.LLMInteractionCompleteAuditEvent;
 import org.parasol.model.audit.LLMInteractionFailedAuditEvent;
 import org.parasol.model.audit.LLMResponseReceivedAuditEvent;
 import org.parasol.model.audit.OutputGuardrailExecutedAuditEvent;
 import org.parasol.model.audit.ToolExecutedAuditEvent;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.langchain4j.data.message.AiMessage;
+import dev.langchain4j.data.message.SystemMessage;
+import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.model.chat.response.ChatResponse;
 import io.quarkiverse.langchain4j.audit.AuditSourceInfo;
+import io.quarkiverse.langchain4j.audit.InitialMessagesCreatedEvent;
 import io.quarkiverse.langchain4j.audit.InputGuardrailExecutedEvent;
 import io.quarkiverse.langchain4j.audit.LLMInteractionCompleteEvent;
 import io.quarkiverse.langchain4j.audit.LLMInteractionFailureEvent;
@@ -26,67 +30,136 @@ import io.quarkiverse.langchain4j.audit.OutputGuardrailExecutedEvent;
 import io.quarkiverse.langchain4j.audit.ResponseFromLLMReceivedEvent;
 import io.quarkiverse.langchain4j.audit.ToolExecutedEvent;
 
-@Mapper(componentModel = ComponentModel.JAKARTA_CDI)
-public abstract class AuditEventMapper {
-	@Inject
-	ObjectMapper objectMapper;
+@ApplicationScoped
+public class AuditEventMapper {
+	private final ObjectMapper objectMapper;
 
-	@Mapping(target = "sourceInfo", expression = "java(toAuditSource(llmInteractionCompleteEvent.sourceInfo()))")
-	@Mapping(target = "result", expression = "java(toJson(llmInteractionCompleteEvent.result()))")
-	public abstract LLMInteractionCompleteAuditEvent toAuditEvent(LLMInteractionCompleteEvent llmInteractionCompleteEvent);
+	public AuditEventMapper(ObjectMapper objectMapper) {
+		this.objectMapper = objectMapper;
+	}
 
-	@Mapping(target = "sourceInfo", expression = "java(toAuditSource(llmInteractionFailureEvent.sourceInfo()))")
-	@Mapping(target = "errorMessage", expression = "java(getMessage(llmInteractionFailureEvent.error()))")
-	@Mapping(target = "causeErrorMessage", expression = "java(getCauseMessage(llmInteractionFailureEvent.error()))")
-	public abstract LLMInteractionFailedAuditEvent toAuditEvent(LLMInteractionFailureEvent llmInteractionFailureEvent);
+	public LLMInitialMessagesCreatedAuditEvent toAuditEvent(InitialMessagesCreatedEvent initialMessagesCreatedEvent) {
+		return LLMInitialMessagesCreatedAuditEvent.builder()
+			.sourceInfo(toAuditSource(initialMessagesCreatedEvent.sourceInfo()))
+			.systemMessage(fromSystemMessage(initialMessagesCreatedEvent.systemMessage()))
+			.userMessage(fromUserMessage(initialMessagesCreatedEvent.userMessage()))
+			.build();
+	}
 
-	@Mapping(target = "sourceInfo", expression = "java(toAuditSource(responseFromLLMReceivedEvent.sourceInfo()))")
-	@Mapping(target = "response", expression = "java(responseFromLLMReceivedEvent.response().aiMessage().text())")
-	@Mapping(target = "modelName", expression = "java(responseFromLLMReceivedEvent.response().modelName())")
-	@Mapping(target = "inputTokenCount", expression = "java(responseFromLLMReceivedEvent.response().tokenUsage().inputTokenCount())")
-	@Mapping(target = "outputTokenCount", expression = "java(responseFromLLMReceivedEvent.response().tokenUsage().outputTokenCount())")
-	public abstract LLMResponseReceivedAuditEvent toAuditEvent(ResponseFromLLMReceivedEvent responseFromLLMReceivedEvent);
+	public LLMInteractionCompleteAuditEvent toAuditEvent(LLMInteractionCompleteEvent llmInteractionCompleteEvent) {
+		return LLMInteractionCompleteAuditEvent.builder()
+			.sourceInfo(toAuditSource(llmInteractionCompleteEvent.sourceInfo()))
+			.result(toJson(llmInteractionCompleteEvent.result()))
+			.build();
+	}
 
-	@Mapping(target = "sourceInfo", expression = "java(toAuditSource(toolExecutedEvent.sourceInfo()))")
-	@Mapping(target = "result", expression = "java(toolExecutedEvent.result())")
-	@Mapping(target = "toolName", expression = "java(toolExecutedEvent.request().name())")
-	@Mapping(target = "toolArgs", expression = "java(toolExecutedEvent.request().arguments())")
-	public abstract ToolExecutedAuditEvent toAuditEvent(ToolExecutedEvent toolExecutedEvent);
+	public LLMInteractionFailedAuditEvent toAuditEvent(LLMInteractionFailureEvent llmInteractionFailureEvent) {
+		return LLMInteractionFailedAuditEvent.builder()
+			.sourceInfo(toAuditSource(llmInteractionFailureEvent.sourceInfo()))
+			.errorMessage(getMessage(llmInteractionFailureEvent.error()))
+			.causeErrorMessage(getCauseMessage(llmInteractionFailureEvent.error()))
+			.build();
+	}
 
-	@Mapping(target = "sourceInfo", expression = "java(toAuditSource(inputGuardrailExecutedEvent.sourceInfo()))")
-	@Mapping(target = "userMessage", expression = "java((inputGuardrailExecutedEvent.params().userMessage() != null) ? inputGuardrailExecutedEvent.params().userMessage().singleText() : null)")
-	@Mapping(target = "rewrittenUserMessage", expression = "java((inputGuardrailExecutedEvent.rewrittenUserMessage() != null) ? inputGuardrailExecutedEvent.rewrittenUserMessage().singleText() : null)")
-	@Mapping(target = "result", expression = "java(inputGuardrailExecutedEvent.result().result().name())")
-	@Mapping(target = "guardrailClass", expression = "java(inputGuardrailExecutedEvent.guardrailClass().getName())")
-	public abstract InputGuardrailExecutedAuditEvent toAuditEvent(InputGuardrailExecutedEvent inputGuardrailExecutedEvent);
+	public LLMResponseReceivedAuditEvent toAuditEvent(ResponseFromLLMReceivedEvent responseFromLLMReceivedEvent) {
+		return LLMResponseReceivedAuditEvent.builder()
+			.sourceInfo(toAuditSource(responseFromLLMReceivedEvent.sourceInfo()))
+			.response(fromResponse(responseFromLLMReceivedEvent.response()))
+			.modelName(responseFromLLMReceivedEvent.response().modelName())
+			.inputTokenCount(responseFromLLMReceivedEvent.response().tokenUsage().inputTokenCount())
+			.outputTokenCount(responseFromLLMReceivedEvent.response().tokenUsage().outputTokenCount())
+			.build();
+	}
 
-	@Mapping(target = "sourceInfo", expression = "java(toAuditSource(outputGuardrailExecutedEvent.sourceInfo()))")
-	@Mapping(target = "response", expression = "java((outputGuardrailExecutedEvent.params().responseFromLLM() != null) ? outputGuardrailExecutedEvent.params().responseFromLLM().text() : null)")
-	@Mapping(target = "result", expression = "java(outputGuardrailExecutedEvent.result().result().name())")
-	@Mapping(target = "guardrailClass", expression = "java(outputGuardrailExecutedEvent.guardrailClass().getName())")
-	public abstract OutputGuardrailExecutedAuditEvent toAuditEvent(OutputGuardrailExecutedEvent outputGuardrailExecutedEvent);
+	public ToolExecutedAuditEvent toAuditEvent(ToolExecutedEvent toolExecutedEvent) {
+		return ToolExecutedAuditEvent.builder()
+			.sourceInfo(toAuditSource(toolExecutedEvent.sourceInfo()))
+			.result(toolExecutedEvent.result())
+			.toolName(toolExecutedEvent.request().name())
+			.toolArgs(toolExecutedEvent.request().arguments())
+			.build();
+	}
 
-	@Mapping(target = "interfaceName", expression = "java(auditSourceInfo.interfaceName())")
-	@Mapping(target = "interactionId", expression = "java(auditSourceInfo.interactionId())")
-	@Mapping(target = "methodName", expression = "java(auditSourceInfo.methodName())")
-	public abstract AuditSource toAuditSource(AuditSourceInfo auditSourceInfo);
+	public InputGuardrailExecutedAuditEvent toAuditEvent(InputGuardrailExecutedEvent inputGuardrailExecutedEvent) {
+		return InputGuardrailExecutedAuditEvent.builder()
+			.sourceInfo(toAuditSource(inputGuardrailExecutedEvent.sourceInfo()))
+			.userMessage(fromUserMessage(inputGuardrailExecutedEvent.params().userMessage()))
+			.rewrittenUserMessage(fromUserMessage(inputGuardrailExecutedEvent.rewrittenUserMessage()))
+			.result(inputGuardrailExecutedEvent.result().result().name())
+			.guardrailClass(inputGuardrailExecutedEvent.guardrailClass().getName())
+			.build();
+	}
 
-	protected Map<String, String> toJson(Object object) {
-		return (object != null) ?
-		       this.objectMapper.convertValue(object, new TypeReference<>() {}) :
+	public OutputGuardrailExecutedAuditEvent toAuditEvent(OutputGuardrailExecutedEvent outputGuardrailExecutedEvent) {
+		return OutputGuardrailExecutedAuditEvent.builder()
+			.sourceInfo(toAuditSource(outputGuardrailExecutedEvent.sourceInfo()))
+			.response(Optional.ofNullable(outputGuardrailExecutedEvent.params().responseFromLLM()).map(AiMessage::text).orElse(null))
+			.result(outputGuardrailExecutedEvent.result().result().name())
+			.guardrailClass(outputGuardrailExecutedEvent.guardrailClass().getName())
+			.build();
+	}
+
+	private AuditSource toAuditSource(AuditSourceInfo auditSourceInfo) {
+		return AuditSource.builder()
+			.interfaceName(auditSourceInfo.interfaceName())
+			.methodName(auditSourceInfo.methodName())
+			.interactionId(auditSourceInfo.interactionId())
+			.build();
+	}
+
+	private static String fromResponse(ChatResponse response) {
+		return Optional.ofNullable(response)
+			.map(r -> r.aiMessage().text())
+			.or(() ->
+				Optional.ofNullable(response.aiMessage().toolExecutionRequests())
+					.map(List::stream)
+					.flatMap(Stream::findFirst)
+					.map(toolExecutionRequest -> "EXECUTE TOOL: %s(%s)".formatted(toolExecutionRequest.name(), toolExecutionRequest.arguments()))
+			)
+			.orElse(null);
+	}
+
+	private static String fromSystemMessage(Optional<SystemMessage> systemMessage) {
+		return systemMessage.map(SystemMessage::text).orElse("");
+	}
+
+	private static String fromUserMessage(UserMessage userMessage) {
+		return (userMessage != null) ?
+		       userMessage.singleText() :
 		       null;
 	}
 
-	protected String getMessage(Throwable t) {
+	String toJson(Object object) {
+		try {
+			return this.objectMapper.writeValueAsString(object);
+		}
+		catch (JsonProcessingException e) {
+			throw new RuntimeException(e);
+		}
+
+		//		return this.objectMapper.valueToTree(object);
+//		return this.objectMapper.convertValue(object, new TypeReference<>() {});
+//		return switch (object) {
+//			case null -> null;
+//			case String s -> Map.of("string", s);
+//			case Number n -> Map.of("number", String.valueOf(n));
+//			case Boolean b2 -> Map.of("boolean", String.valueOf(b2));
+//			case Object o when o.getClass().isPrimitive() -> Map.of("value", String.valueOf(o));
+//			case Object o when o.getClass().isArray() -> Map.of("array", String.valueOf(o));
+//			default -> this.objectMapper.convertValue(object, new TypeReference<>() {});
+//		};
+	}
+
+	private static String getMessage(Throwable t) {
 		return Optional.ofNullable(t)
 			.map(Throwable::getMessage)
 			.orElse(null);
 	}
 
-	protected String getCauseMessage(Throwable t) {
+	private static String getCauseMessage(Throwable t) {
 		return Optional.ofNullable(t)
 			.map(Throwable::getCause)
-			.map(this::getMessage)
+			.map(AuditEventMapper::getMessage)
 			.orElse(null);
 	}
 }

@@ -1,8 +1,5 @@
 package org.parasol.model.audit;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -15,7 +12,7 @@ import org.hibernate.type.SqlTypes;
 public class LLMInteractionCompleteAuditEvent extends AuditEvent {
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(updatable = false)
-	private Map<String, String> result = new HashMap<>();
+	private String result;
 
 	protected LLMInteractionCompleteAuditEvent() {
 		super();
@@ -23,7 +20,7 @@ public class LLMInteractionCompleteAuditEvent extends AuditEvent {
 
 	private LLMInteractionCompleteAuditEvent(Builder builder) {
 		super(builder);
-		this.result.putAll(builder.result);
+		this.result = builder.result;
 	}
 
 	@Override
@@ -31,11 +28,11 @@ public class LLMInteractionCompleteAuditEvent extends AuditEvent {
 		return AuditEventType.LLM_INTERACTION_COMPLETE;
 	}
 
-	public Map<String, String> getResult() {
+	public String getResult() {
 		return result;
 	}
 
-	public void setResult(Map<String, String> result) {
+	public void setResult(String result) {
 		this.result = result;
 	}
 
@@ -57,7 +54,7 @@ public class LLMInteractionCompleteAuditEvent extends AuditEvent {
 	}
 
 	public static final class Builder extends AuditEvent.Builder<Builder, LLMInteractionCompleteAuditEvent> {
-		private Map<String, String> result = new HashMap<>();
+		private String result;
 
 		private Builder() {
 			super();
@@ -68,11 +65,8 @@ public class LLMInteractionCompleteAuditEvent extends AuditEvent {
 			this.result = source.result;
 		}
 
-		public Builder result(Map<String, String> result) {
-			if (result != null) {
-				this.result.putAll(result);
-			}
-
+		public Builder result(String result) {
+			this.result = result;
 			return this;
 		}
 

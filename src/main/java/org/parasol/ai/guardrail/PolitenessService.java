@@ -12,6 +12,8 @@ public interface PolitenessService {
 	
 		Simply try to detect whether the string is polite or not.
 		
+		Do not tell me what you are thinking.
+		
 		Return a boolean value, either true or false, where true means it is polite and respectful, and false means it is certainly not polite or respectful.
 		
 		Do not return anything else. Do not even return a newline or a leading field. Only a single boolean value.

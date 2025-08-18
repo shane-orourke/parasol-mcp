@@ -13,8 +13,6 @@ import io.quarkus.websockets.next.WebSocket;
 import io.quarkus.websockets.next.WebSocketConnection;
 
 import io.opentelemetry.instrumentation.annotations.WithSpan;
-import io.smallrye.common.annotation.Blocking;
-import io.smallrye.mutiny.Multi;
 
 @WebSocket(path = "/ws/query")
 public class ClaimWebsocketChatBot {
@@ -42,26 +40,26 @@ public class ClaimWebsocketChatBot {
         return new ClaimBotQueryResponse("token", message, "");
     }
 
-//    @OnTextMessage
-//    @WithSpan("ChatMessage")
-//    public ClaimBotQueryResponse onMessage(ClaimBotQuery query) {
-//        Log.infof("Got chat query: %s", query);
-//        var response = new ClaimBotQueryResponse("token", this.bot.chat(query), "");
-//        Log.debugf("Got chat response: %s", response);
-//
-//        return response;
-//    }
-
     @OnTextMessage
-  	@WithSpan("ChatMessage")
-    @Blocking
-    public Multi<ClaimBotQueryResponse> onMessage(ClaimBotQuery query) {
+    @WithSpan("ChatMessage")
+    public ClaimBotQueryResponse onMessage(ClaimBotQuery query) {
         Log.infof("Got chat query: %s", query);
+        var response = new ClaimBotQueryResponse("token", this.bot.chat(query), "");
+        Log.debugf("Got chat response: %s", response);
 
-        return bot.chat(query)
-          .invoke(response -> Log.debugf("Got chat response: %s", response))
-          .map(resp -> new ClaimBotQueryResponse("token", resp, ""));
+        return response;
     }
+
+//    @OnTextMessage
+//  	@WithSpan("ChatMessage")
+//    @Blocking
+//    public Multi<ClaimBotQueryResponse> onMessage(ClaimBotQuery query) {
+//        Log.infof("Got chat query: %s", query);
+//
+//        return bot.chat(query)
+//          .invoke(response -> Log.debugf("Got chat response: %s", response))
+//          .map(resp -> new ClaimBotQueryResponse("token", resp, ""));
+//    }
 }
 
 

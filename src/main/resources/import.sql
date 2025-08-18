@@ -192,7 +192,4 @@ INSERT INTO claims(id, claim_number, inception_date, category, policy_number, cl
     'New'
     );
 
-
-
-
 ALTER SEQUENCE claims_seq RESTART WITH 7;

@@ -21,6 +21,9 @@ import org.parasol.model.audit.ToolExecutedAuditEvent;
 
 import io.quarkus.test.junit.QuarkusTest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.langchain4j.agent.tool.ToolExecutionRequest;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.UserMessage;
@@ -77,10 +80,13 @@ class AuditEventMapperTests {
 	@Inject
 	AuditEventMapper auditEventMapper;
 
+	@Inject
+	ObjectMapper objectMapper;
+
 	private AuditSourceInfo auditSourceInfo = new MockAuditSourceInfo();
 
 	@Test
-	void mapsLLMInteractionComplete() {
+	void mapsLLMInteractionComplete() throws JsonProcessingException {
 		var event = new DefaultLLMInteractionCompleteEvent(this.auditSourceInfo, SOME_OBJECT);
 		var auditEvent = this.auditEventMapper.toAuditEvent(event);
 
@@ -90,11 +96,11 @@ class AuditEventMapperTests {
 			.isEqualTo(AuditEventType.LLM_INTERACTION_COMPLETE);
 
 		checkAuditSource(auditEvent.getSourceInfo());
-		assertThat(auditEvent.getResult())
+		assertThat(this.objectMapper.readValue(auditEvent.getResult(), new TypeReference<Map<String, Object>>() {}))
 			.hasSize(2)
 			.containsOnly(
 				entry("field1", SOME_OBJECT.field1()),
-				entry("field2", String.valueOf(SOME_OBJECT.field2()))
+				entry("field2", SOME_OBJECT.field2())
 			);
 	}
 
@@ -219,11 +225,6 @@ class AuditEventMapperTests {
 			);
 
 		checkAuditSource(auditEvent.getSourceInfo());
-	}
-
-	@Test
-	void mapsAuditSourceInfo() {
-		checkAuditSource(this.auditEventMapper.toAuditSource(this.auditSourceInfo));
 	}
 
 	private static void checkAuditSource(AuditSource auditSource) {

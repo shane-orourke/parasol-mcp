@@ -44,17 +44,17 @@ quarkus:
       parasol-chat:
         timeout: 600s
         chat-model:
-          model-id: qwen3:4b
+          model-id: llama3.2:latest
           temperature: 0.3
       generate-email:
         timeout: 600s
         chat-model:
-          model-id: qwen3:4b
+          model-id: llama3.2:latest
           temperature: 0.3
       politeness:
         timeout: 600s
         chat-model:
-          model-id: qwen3:4b
+          model-id: llama3.2:latest
           temperature: 0.3
       embedding-model:
         model-id: snowflake-arctic-embed

@@ -14,6 +14,8 @@ import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.logging.Log;
 import io.quarkus.panache.common.Sort;
 
+import dev.langchain4j.data.message.SystemMessage;
+import io.quarkiverse.langchain4j.audit.InitialMessagesCreatedEvent;
 import io.quarkiverse.langchain4j.audit.InputGuardrailExecutedEvent;
 import io.quarkiverse.langchain4j.audit.LLMInteractionCompleteEvent;
 import io.quarkiverse.langchain4j.audit.LLMInteractionFailureEvent;
@@ -31,6 +33,23 @@ public class AuditEventRepository implements PanacheRepository<AuditEvent> {
 
 	public List<AuditEvent> getAllForInteractionId(UUID interactionId) {
 		return find("sourceInfo.interactionId", Sort.by("createdOn"), interactionId).list();
+	}
+
+	@Transactional
+	@AuditObserved(
+		name = "parasol.llm.initialmessages.created",
+		description = "A count of LLM initial messages created",
+		unit = "messages created"
+	)
+	public void llmInitialMessagesCreated(@Observes InitialMessagesCreatedEvent e) {
+		Log.infof(
+			"LLM initial messages created:\nsource: %s\nsystemMessage: %s\nuserMessage: %s",
+			e.sourceInfo(),
+			e.systemMessage().map(SystemMessage::text).orElse(""),
+			e.userMessage().singleText()
+		);
+
+		persist(this.auditEventMapper.toAuditEvent(e));
 	}
 
 	@Transactional

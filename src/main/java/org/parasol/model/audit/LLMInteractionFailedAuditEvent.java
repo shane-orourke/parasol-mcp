@@ -7,10 +7,10 @@ import jakarta.persistence.Entity;
 @Entity
 @DiscriminatorValue("LLM_INTERACTION_FAILED")
 public class LLMInteractionFailedAuditEvent extends AuditEvent {
-	@Column(updatable = false)
+	@Column(updatable = false, columnDefinition = "TEXT")
 	private String errorMessage;
 
-	@Column(updatable = false)
+	@Column(updatable = false, columnDefinition = "TEXT")
 	private String causeErrorMessage;
 
 	protected LLMInteractionFailedAuditEvent() {

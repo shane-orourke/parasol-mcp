@@ -8,7 +8,6 @@ import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import io.quarkiverse.langchain4j.RegisterAiService;
 import io.quarkiverse.langchain4j.ToolBox;
-import io.smallrye.mutiny.Multi;
 
 @RegisterAiService(modelName = "parasol-chat")
 @SessionScoped
@@ -36,5 +35,6 @@ public interface ClaimService {
         Question: {{query.query}}
     """)
     @ToolBox(NotificationService.class)
-    Multi<String> chat(ClaimBotQuery query);
+	  String chat(ClaimBotQuery query);
+//    Multi<String> chat(ClaimBotQuery query);
 }

@@ -18,8 +18,6 @@ public class Claim extends PanacheEntity {
     public String claimNumber;
     public String category;
     public String policyNumber;
-
-    @Column(columnDefinition="DATETIME")
     public LocalDate inceptionDate;
     public String clientName;
     public String subject;

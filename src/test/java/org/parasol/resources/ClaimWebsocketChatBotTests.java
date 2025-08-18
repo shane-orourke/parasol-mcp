@@ -76,8 +76,8 @@ class ClaimWebsocketChatBotTests {
 		// Set up our AI mock
 		var reply = RESPONSE.stream().collect(Collectors.joining(" "));
 		when(this.claimService.chat(argThat(CHAT_SERVICE_MATCHER)))
-//			.thenReturn(reply);
-			.thenReturn(delayedMulti);
+			.thenReturn(reply);
+//			.thenReturn(delayedMulti);
 
 		// Create a WebSocket connection and wait for the connection to establish
 		var connection = connectClient();
@@ -88,14 +88,14 @@ class ClaimWebsocketChatBotTests {
 		// Wait for the server to respond with what we expect
 		await()
 			.atMost(Duration.ofMinutes(5))
-//			.until(() -> ClientEndpoint.MESSAGES.size() == 1);
-			.until(() -> ClientEndpoint.MESSAGES.size() == RESPONSE.size());
+			.until(() -> ClientEndpoint.MESSAGES.size() == 1);
+//			.until(() -> ClientEndpoint.MESSAGES.size() == RESPONSE.size());
 
 		// Verify the messages are what we expected
 		assertThat(ClientEndpoint.MESSAGES)
-//			.singleElement()
-//			.isEqualTo(reply);
-			.hasSameElementsAs(RESPONSE);
+			.singleElement()
+			.isEqualTo(reply);
+//			.hasSameElementsAs(RESPONSE);
 
 		// Close the connection
 		connection.closeAndAwait();
