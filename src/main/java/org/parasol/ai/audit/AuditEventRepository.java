@@ -1,5 +1,8 @@
 package org.parasol.ai.audit;
 
+import java.util.List;
+import java.util.UUID;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.transaction.Transactional;
@@ -9,6 +12,7 @@ import org.parasol.model.audit.AuditEvent;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.logging.Log;
+import io.quarkus.panache.common.Sort;
 
 import io.quarkiverse.langchain4j.audit.InputGuardrailExecutedEvent;
 import io.quarkiverse.langchain4j.audit.LLMInteractionCompleteEvent;
@@ -23,6 +27,10 @@ public class AuditEventRepository implements PanacheRepository<AuditEvent> {
 
 	public AuditEventRepository(AuditEventMapper auditEventMapper) {
 		this.auditEventMapper = auditEventMapper;
+	}
+
+	public List<AuditEvent> getAllForInteractionId(UUID interactionId) {
+		return find("sourceInfo.interactionId", Sort.by("createdOn"), interactionId).list();
 	}
 
 	@Transactional
