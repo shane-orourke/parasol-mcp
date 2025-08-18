@@ -11,7 +11,7 @@ public class OutputGuardrailExecutedAuditEvent extends AuditEvent {
 	private String response;
 
 	@Column(updatable = false, columnDefinition = "TEXT")
-	private String result;
+	private String guardrailResult;
 
 	@Column(updatable = false)
 	private String guardrailClass;
@@ -25,7 +25,7 @@ public class OutputGuardrailExecutedAuditEvent extends AuditEvent {
 	private OutputGuardrailExecutedAuditEvent(Builder builder) {
 		super(builder);
 		this.response = builder.response;
-		this.result = builder.result;
+		this.guardrailResult = builder.result;
 		this.guardrailClass = builder.guardrailClass;
 	}
 
@@ -58,12 +58,12 @@ public class OutputGuardrailExecutedAuditEvent extends AuditEvent {
 		this.response = response;
 	}
 
-	public String getResult() {
-		return result;
+	public String getGuardrailResult() {
+		return guardrailResult;
 	}
 
-	public void setResult(String result) {
-		this.result = result;
+	public void setGuardrailResult(String result) {
+		this.guardrailResult = result;
 	}
 
 	@Override
@@ -71,7 +71,7 @@ public class OutputGuardrailExecutedAuditEvent extends AuditEvent {
 		return "OutputGuardrailExecutedAuditEvent{" +
 			"guardrailClass='" + getGuardrailClass() + '\'' +
 			", response='" + getResponse() + '\'' +
-			", result='" + getResult() + '\'' +
+			", guardrailResult='" + getGuardrailResult() + '\'' +
 			", id=" + getId() +
 			", sourceInfo=" + getSourceInfo() +
 			'}';
@@ -89,7 +89,7 @@ public class OutputGuardrailExecutedAuditEvent extends AuditEvent {
 		private Builder(OutputGuardrailExecutedAuditEvent source) {
 			super(source);
 			this.response = source.response;
-			this.result = source.result;
+			this.result = source.guardrailResult;
 			this.guardrailClass = source.guardrailClass;
 		}
 

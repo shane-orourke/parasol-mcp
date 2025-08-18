@@ -14,7 +14,7 @@ public class ToolExecutedAuditEvent extends AuditEvent {
 	private String toolArgs;
 
 	@Column(updatable = false, columnDefinition = "TEXT")
-	private String result;
+	private String toolResult;
 
 	protected ToolExecutedAuditEvent() {
 		super();
@@ -24,7 +24,7 @@ public class ToolExecutedAuditEvent extends AuditEvent {
 		super(builder);
 		this.toolName = builder.toolName;
 		this.toolArgs = builder.toolArgs;
-		this.result = builder.result;
+		this.toolResult = builder.result;
 	}
 
 	@Override
@@ -40,12 +40,12 @@ public class ToolExecutedAuditEvent extends AuditEvent {
 		return new Builder();
 	}
 
-	public String getResult() {
-		return result;
+	public String getToolResult() {
+		return toolResult;
 	}
 
-	public void setResult(String result) {
-		this.result = result;
+	public void setToolResult(String result) {
+		this.toolResult = result;
 	}
 
 	public String getToolArgs() {
@@ -67,7 +67,7 @@ public class ToolExecutedAuditEvent extends AuditEvent {
 	@Override
 	public String toString() {
 		return "ToolExecutedAuditEvent{" +
-			"result='" + getResult() + '\'' +
+			"toolResult='" + getToolResult() + '\'' +
 			", toolName='" + getToolName() + '\'' +
 			", toolArgs='" + getToolArgs() + '\'' +
 			", id=" + getId() +
@@ -87,7 +87,7 @@ public class ToolExecutedAuditEvent extends AuditEvent {
 			super(source);
 			this.toolName = source.toolName;
 			this.toolArgs = source.toolArgs;
-			this.result = source.result;
+			this.result = source.toolResult;
 		}
 
 		public Builder toolName(String toolName) {

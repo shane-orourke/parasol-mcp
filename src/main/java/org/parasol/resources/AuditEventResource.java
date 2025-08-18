@@ -1,16 +1,20 @@
 package org.parasol.resources;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
 import org.parasol.ai.audit.AuditEventRepository;
 import org.parasol.model.audit.AuditEvent;
+import org.parasol.model.audit.AuditStats;
 
 import io.quarkus.panache.common.Sort;
 
@@ -32,5 +36,11 @@ public class AuditEventResource {
 	@Path("/{interactionId}")
 	public List<AuditEvent> getEventsForInteraction(@PathParam("interactionId") UUID interactionId) {
 		return this.auditEventRepository.getAllForInteractionId(interactionId);
+	}
+
+	@GET
+	@Path("/stats")
+	public AuditStats getStats(@QueryParam("start") Optional<Instant> start, @QueryParam("end") Optional<Instant> end) {
+		return this.auditEventRepository.getAuditStats(start, end);
 	}
 }

@@ -163,7 +163,7 @@ class AuditEventMapperTests {
 				ToolExecutedAuditEvent::getEventType,
 				ToolExecutedAuditEvent::getToolName,
 				ToolExecutedAuditEvent::getToolArgs,
-				ToolExecutedAuditEvent::getResult
+				ToolExecutedAuditEvent::getToolResult
 			)
 			.containsExactly(
 				AuditEventType.TOOL_EXECUTED,
@@ -214,7 +214,7 @@ class AuditEventMapperTests {
 			.extracting(
 				OutputGuardrailExecutedAuditEvent::getEventType,
 				OutputGuardrailExecutedAuditEvent::getResponse,
-				OutputGuardrailExecutedAuditEvent::getResult,
+				OutputGuardrailExecutedAuditEvent::getGuardrailResult,
 				OutputGuardrailExecutedAuditEvent::getGuardrailClass
 			)
 			.containsExactly(

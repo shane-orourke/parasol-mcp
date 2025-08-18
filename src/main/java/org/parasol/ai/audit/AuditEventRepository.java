@@ -1,6 +1,9 @@
 package org.parasol.ai.audit;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -9,6 +12,8 @@ import jakarta.transaction.Transactional;
 
 import org.parasol.mapping.AuditEventMapper;
 import org.parasol.model.audit.AuditEvent;
+import org.parasol.model.audit.AuditStats;
+import org.parasol.model.audit.AuditStats.InteractionStats;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.logging.Log;
@@ -25,6 +30,38 @@ import io.quarkiverse.langchain4j.audit.ToolExecutedEvent;
 
 @ApplicationScoped
 public class AuditEventRepository implements PanacheRepository<AuditEvent> {
+	private static final String STATS_NATIVE_QUERY = """
+		WITH per_interaction AS (
+      SELECT
+        interaction_id,
+        MIN(created_on) AS interaction_date,
+        COUNT(*) FILTER (WHERE event_type = 'LLM_INTERACTION_FAILED') AS num_llm_failures,
+        COUNT(*) FILTER (WHERE event_type = 'OUTPUT_GUARDRAIL_EXECUTED') AS total_output_guardrail_executions,
+        COUNT(*) FILTER (WHERE event_type = 'OUTPUT_GUARDRAIL_EXECUTED' AND guardrail_result IN ('FATAL', 'FAILURE')) AS total_output_guardrail_failures
+      FROM audit_events 
+      GROUP BY interaction_id
+		)
+		SELECT
+      interaction_id,
+      interaction_date,
+		  num_llm_failures,
+		  total_output_guardrail_executions,
+		  total_output_guardrail_failures,
+		  CASE
+		    WHEN total_output_guardrail_executions > 0
+		      THEN AVG(total_output_guardrail_executions) FILTER (WHERE total_output_guardrail_failures > 0) OVER ()
+		    ELSE 0
+		  END AS avg_output_guardrail_executions,
+			CASE
+		    WHEN total_output_guardrail_failures > 0
+		      THEN AVG(total_output_guardrail_failures) FILTER (WHERE total_output_guardrail_failures > 0) OVER ()
+		    ELSE 0
+		  END AS avg_output_guardrail_failures
+		FROM per_interaction
+		WHERE interaction_date BETWEEN :start_date AND :end_date
+		ORDER BY interaction_date
+		""";
+
 	private final AuditEventMapper auditEventMapper;
 
 	public AuditEventRepository(AuditEventMapper auditEventMapper) {
@@ -33,6 +70,20 @@ public class AuditEventRepository implements PanacheRepository<AuditEvent> {
 
 	public List<AuditEvent> getAllForInteractionId(UUID interactionId) {
 		return find("sourceInfo.interactionId", Sort.by("createdOn"), interactionId).list();
+	}
+
+	public AuditStats getAuditStats(Optional<Instant> start, Optional<Instant> end) {
+		var realEnd = end.orElseGet(Instant::now);
+		var realStart = start
+			.filter(s -> s.isBefore(realEnd))
+			.orElseGet(() -> realEnd.minus(7, ChronoUnit.DAYS));
+
+		var stats = getEntityManager().createNativeQuery(STATS_NATIVE_QUERY, InteractionStats.class)
+			                  .setParameter("start_date", realStart)
+			                  .setParameter("end_date", realEnd)
+			                  .getResultList();
+
+		return new AuditStats(realStart, realEnd, stats);
 	}
 
 	@Transactional
