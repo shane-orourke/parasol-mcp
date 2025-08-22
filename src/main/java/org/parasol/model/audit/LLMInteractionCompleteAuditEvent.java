@@ -1,12 +1,17 @@
 package org.parasol.model.audit;
 
+
+import static org.parasol.model.audit.LLMInteractionCompleteAuditEvent.EVENT_TYPE;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
 @Entity
-@DiscriminatorValue("LLM_INTERACTION_COMPLETE")
+@DiscriminatorValue(EVENT_TYPE)
 public class LLMInteractionCompleteAuditEvent extends AuditEvent {
+	public static final String EVENT_TYPE = "LLM_INTERACTION_COMPLETE";
+
 	@Column(updatable = false, columnDefinition = "TEXT")
 	private String result;
 

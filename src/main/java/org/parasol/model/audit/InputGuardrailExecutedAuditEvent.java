@@ -1,12 +1,16 @@
 package org.parasol.model.audit;
 
+import static org.parasol.model.audit.InputGuardrailExecutedAuditEvent.EVENT_TYPE;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
 @Entity
-@DiscriminatorValue("INPUT_GUARDRAIL_EXECUTED")
+@DiscriminatorValue(EVENT_TYPE)
 public class InputGuardrailExecutedAuditEvent extends AuditEvent {
+	public static final String EVENT_TYPE = "INPUT_GUARDRAIL_EXECUTED";
+
 	@Column(updatable = false, columnDefinition = "TEXT")
 	private String userMessage;
 

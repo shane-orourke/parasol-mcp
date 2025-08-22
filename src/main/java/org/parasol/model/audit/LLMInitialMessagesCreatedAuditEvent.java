@@ -1,12 +1,16 @@
 package org.parasol.model.audit;
 
+import static org.parasol.model.audit.LLMInitialMessagesCreatedAuditEvent.EVENT_TYPE;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
 @Entity
-@DiscriminatorValue("INITIAL_MESSAGES_CREATED")
+@DiscriminatorValue(EVENT_TYPE)
 public class LLMInitialMessagesCreatedAuditEvent extends AuditEvent {
+	public static final String EVENT_TYPE = "INITIAL_MESSAGES_CREATED";
+
 	@Column(updatable = false, columnDefinition = "TEXT")
 	private String systemMessage;
 	

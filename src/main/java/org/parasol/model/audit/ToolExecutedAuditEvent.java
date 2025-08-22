@@ -1,12 +1,16 @@
 package org.parasol.model.audit;
 
+import static org.parasol.model.audit.ToolExecutedAuditEvent.EVENT_TYPE;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
 @Entity
-@DiscriminatorValue("TOOL_EXECUTED")
+@DiscriminatorValue(EVENT_TYPE)
 public class ToolExecutedAuditEvent extends AuditEvent {
+	public static final String EVENT_TYPE = "TOOL_EXECUTED";
+
 	@Column(updatable = false)
 	private String toolName;
 

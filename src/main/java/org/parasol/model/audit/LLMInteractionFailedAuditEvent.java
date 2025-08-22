@@ -1,12 +1,16 @@
 package org.parasol.model.audit;
 
+import static org.parasol.model.audit.LLMInteractionFailedAuditEvent.EVENT_TYPE;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
 @Entity
-@DiscriminatorValue("LLM_INTERACTION_FAILED")
+@DiscriminatorValue(EVENT_TYPE)
 public class LLMInteractionFailedAuditEvent extends AuditEvent {
+	public static final String EVENT_TYPE = "LLM_INTERACTION_FAILED";
+
 	@Column(updatable = false, columnDefinition = "TEXT")
 	private String errorMessage;
 

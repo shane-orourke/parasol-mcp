@@ -1,12 +1,16 @@
 package org.parasol.model.audit;
 
+import static org.parasol.model.audit.LLMResponseReceivedAuditEvent.EVENT_TYPE;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
 @Entity
-@DiscriminatorValue("LLM_RESPONSE_RECEIVED")
+@DiscriminatorValue(EVENT_TYPE)
 public class LLMResponseReceivedAuditEvent extends AuditEvent {
+	public static final String EVENT_TYPE = "LLM_RESPONSE_RECEIVED";
+
 	@Column(updatable = false, columnDefinition = "TEXT")
 	private String response;
 
