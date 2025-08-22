@@ -55,7 +55,8 @@ public class LLMInteractionFailedAuditEvent extends AuditEvent {
 	@Override
 	public String toString() {
 		return "LLMInteractionFailedAuditEvent{" +
-			"causeErrorMessage='" + getCauseErrorMessage() + '\'' +
+			"eventType='" + getEventType() + '\'' +
+			", causeErrorMessage='" + getCauseErrorMessage() + '\'' +
 			", errorMessage='" + getErrorMessage() + '\'' +
 			", id=" + getId() +
 			", sourceInfo=" + getSourceInfo() +

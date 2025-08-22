@@ -1,7 +1,6 @@
 package org.parasol.ai.audit;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -11,9 +10,12 @@ import jakarta.enterprise.event.Observes;
 import jakarta.transaction.Transactional;
 
 import org.parasol.mapping.AuditEventMapper;
+import org.parasol.model.audit.AuditDates;
 import org.parasol.model.audit.AuditEvent;
 import org.parasol.model.audit.AuditStats;
 import org.parasol.model.audit.AuditStats.InteractionStats;
+import org.parasol.model.audit.LLMInteractions;
+import org.parasol.model.audit.LLMInteractions.LLMInteraction;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.logging.Log;
@@ -62,6 +64,32 @@ public class AuditEventRepository implements PanacheRepository<AuditEvent> {
 		ORDER BY interaction_date
 		""";
 
+	private static final String INTERACTIONS_NATIVE_QUERY = """
+		WITH per_interaction AS (
+			SELECT
+				interaction_id,
+				MIN(created_on) AS interaction_date,
+				MAX(system_message) FILTER (WHERE event_type = 'INITIAL_MESSAGES_CREATED') AS system_message,
+				MAX(user_message) FILTER (WHERE event_type = 'INITIAL_MESSAGES_CREATED') AS user_message,
+				MAX(result) FILTER (WHERE event_type = 'LLM_INTERACTION_COMPLETE') AS result,
+				MAX(error_message) FILTER (WHERE event_type = 'LLM_INTERACTION_FAILED') AS error_message,
+				MAX(cause_error_message) FILTER (WHERE event_type = 'LLM_INTERACTION_FAILED') AS cause_error_message
+			FROM audit_events
+			GROUP BY interaction_id
+		)
+		SELECT
+			interaction_id,
+			interaction_date,
+			system_message,
+			user_message,
+			result,
+			error_message,
+			cause_error_message
+		FROM per_interaction
+		WHERE interaction_date BETWEEN :start_date AND :end_date
+		ORDER BY interaction_date
+		""";
+
 	private final AuditEventMapper auditEventMapper;
 
 	public AuditEventRepository(AuditEventMapper auditEventMapper) {
@@ -73,17 +101,23 @@ public class AuditEventRepository implements PanacheRepository<AuditEvent> {
 	}
 
 	public AuditStats getAuditStats(Optional<Instant> start, Optional<Instant> end) {
-		var realEnd = end.orElseGet(Instant::now);
-		var realStart = start
-			.filter(s -> s.isBefore(realEnd))
-			.orElseGet(() -> realEnd.minus(7, ChronoUnit.DAYS));
-
+		var auditDates = AuditDates.from(start, end);
 		var stats = getEntityManager().createNativeQuery(STATS_NATIVE_QUERY, InteractionStats.class)
-			                  .setParameter("start_date", realStart)
-			                  .setParameter("end_date", realEnd)
+			                  .setParameter("start_date", auditDates.start())
+			                  .setParameter("end_date", auditDates.end())
 			                  .getResultList();
 
-		return new AuditStats(realStart, realEnd, stats);
+		return new AuditStats(auditDates, stats);
+	}
+
+	public LLMInteractions getLLMInteractions(Optional<Instant> start, Optional<Instant> end) {
+		var auditDates = AuditDates.from(start, end);
+		var interactions = getEntityManager().createNativeQuery(INTERACTIONS_NATIVE_QUERY, LLMInteraction.class)
+			.setParameter("start_date", auditDates.start())
+			                  .setParameter("end_date", auditDates.end())
+			                  .getResultList();
+
+		return new LLMInteractions(auditDates, interactions);
 	}
 
 	@Transactional

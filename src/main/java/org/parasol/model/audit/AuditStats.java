@@ -8,9 +8,9 @@ import java.util.UUID;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record AuditStats(Instant start, Instant end, List<InteractionStats> stats) {
-	public static AuditStats empty(Instant start, Instant end) {
-		return new AuditStats(start, end, List.of());
+public record AuditStats(AuditDates auditDates, List<InteractionStats> stats) {
+	public static AuditStats empty(AuditDates auditDates) {
+		return new AuditStats(auditDates, List.of());
 	}
 
 	public record InteractionStats(

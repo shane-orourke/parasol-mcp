@@ -81,7 +81,8 @@ public class InputGuardrailExecutedAuditEvent extends AuditEvent {
 	@Override
 	public String toString() {
 		return "InputGuardrailExecutedAuditEvent{" +
-			"guardrailClass='" + getGuardrailClass() + '\'' +
+			"eventType='" + getEventType() + '\'' +
+			", guardrailClass='" + getGuardrailClass() + '\'' +
 			", userMessage='" + getUserMessage() + '\'' +
 			", rewrittenUserMessage='" + getRewrittenUserMessage() + '\'' +
 			", result='" + getResult() + '\'' +

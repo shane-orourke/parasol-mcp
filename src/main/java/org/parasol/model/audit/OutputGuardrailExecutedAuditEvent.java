@@ -69,7 +69,8 @@ public class OutputGuardrailExecutedAuditEvent extends AuditEvent {
 	@Override
 	public String toString() {
 		return "OutputGuardrailExecutedAuditEvent{" +
-			"guardrailClass='" + getGuardrailClass() + '\'' +
+			"eventType='" + getEventType() + '\'' +
+			", guardrailClass='" + getGuardrailClass() + '\'' +
 			", response='" + getResponse() + '\'' +
 			", guardrailResult='" + getGuardrailResult() + '\'' +
 			", id=" + getId() +

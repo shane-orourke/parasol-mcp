@@ -57,7 +57,8 @@ public class LLMInitialMessagesCreatedAuditEvent extends AuditEvent {
 	@Override
 	public String toString() {
 		return "LLMInitialMessagesCreatedAuditEvent{" +
-			"systemMessage='" + getSystemMessage() + '\'' +
+			"eventType='" + getEventType() + '\'' +
+			", systemMessage='" + getSystemMessage() + '\'' +
 			", userMessage='" + getUserMessage() + '\'' +
 			", id=" + getId() +
 			", sourceInfo=" + getSourceInfo() +

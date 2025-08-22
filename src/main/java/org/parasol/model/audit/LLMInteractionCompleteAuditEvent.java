@@ -4,14 +4,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
 @Entity
 @DiscriminatorValue("LLM_INTERACTION_COMPLETE")
 public class LLMInteractionCompleteAuditEvent extends AuditEvent {
-	@JdbcTypeCode(SqlTypes.JSON)
-	@Column(updatable = false)
+	@Column(updatable = false, columnDefinition = "TEXT")
 	private String result;
 
 	protected LLMInteractionCompleteAuditEvent() {
@@ -47,8 +43,8 @@ public class LLMInteractionCompleteAuditEvent extends AuditEvent {
 	@Override
 	public String toString() {
 		return "LLMInteractionCompleteAuditEvent{" +
-			"result='" + getResult() + '\'' +
-			", eventType=" + getEventType() +
+			"eventType='" + getEventType() + '\'' +
+			", result='" + getResult() + '\'' +
 			", id=" + getId() +
 			", sourceInfo=" + getSourceInfo() + '}';
 	}

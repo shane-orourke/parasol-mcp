@@ -84,7 +84,8 @@ public class LLMResponseReceivedAuditEvent extends AuditEvent {
 	@Override
 	public String toString() {
 		return "LLMResponseReceivedAuditEvent{" +
-			"inputTokenCount=" + getInputTokenCount() +
+			"eventType='" + getEventType() + '\'' +
+			", inputTokenCount=" + getInputTokenCount() +
 			", response='" + getResponse() + '\'' +
 			", modelName='" + getModelName() + '\'' +
 			", outputTokenCount=" + getOutputTokenCount() +
