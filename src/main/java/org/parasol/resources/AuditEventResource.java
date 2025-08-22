@@ -12,10 +12,10 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
-import org.parasol.ai.audit.AuditEventRepository;
 import org.parasol.model.audit.AuditEvent;
 import org.parasol.model.audit.AuditStats;
 import org.parasol.model.audit.LLMInteractions;
+import org.parasol.repository.AuditEventRepository;
 
 import io.quarkus.panache.common.Sort;
 

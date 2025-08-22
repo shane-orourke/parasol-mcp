@@ -1,4 +1,4 @@
-package org.parasol.ai.audit;
+package org.parasol.repository;
 
 import java.time.Instant;
 import java.util.List;
@@ -9,6 +9,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.transaction.Transactional;
 
+import org.parasol.ai.audit.AuditObserved;
 import org.parasol.mapping.AuditEventMapper;
 import org.parasol.model.audit.AuditDates;
 import org.parasol.model.audit.AuditEvent;

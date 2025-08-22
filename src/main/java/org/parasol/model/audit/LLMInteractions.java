@@ -27,6 +27,14 @@ public record LLMInteractions(AuditDates auditDates, List<LLMInteraction> intera
 	) {
 		public enum InteractionStatus { SUCCESS, FAILURE, UNKNOWN }
 
+		public static LLMInteraction success(UUID interactionId, Instant interactionDate, String systemMessage, String userMessage, String result) {
+			return new LLMInteraction(interactionId, interactionDate, systemMessage, userMessage, result, null, null);
+		}
+
+		public static LLMInteraction failure(UUID interactionId, Instant interactionDate, String systemMessage, String userMessage, String errorMessage, String causeErrorMessage) {
+			return new LLMInteraction(interactionId, interactionDate, systemMessage, userMessage, null, errorMessage, causeErrorMessage);
+		}
+
 		@JsonProperty(value = "status", access = Access.READ_ONLY)
 		public InteractionStatus getStatus() {
 			return Optional.ofNullable(errorMessage)
