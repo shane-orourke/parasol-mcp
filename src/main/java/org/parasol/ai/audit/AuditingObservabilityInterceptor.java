@@ -18,7 +18,6 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
-import io.quarkiverse.langchain4j.audit.AuditSourceInfo;
 import io.quarkiverse.langchain4j.audit.LLMInteractionEvent;
 import io.quarkiverse.langchain4j.audit.ResponseFromLLMReceivedEvent;
 import io.quarkiverse.langchain4j.audit.ToolExecutedEvent;
@@ -89,7 +88,7 @@ public class AuditingObservabilityInterceptor {
 					auditObserved.name(),
 					auditObserved.description(),
 					auditObserved.unit(),
-					sourceInfo
+					metricAttributes.build()
 				);
 
 				interactionEvent.filter(event -> event instanceof ResponseFromLLMReceivedEvent)
@@ -115,18 +114,12 @@ public class AuditingObservabilityInterceptor {
 		              .findFirst();
 	}
 
-	private void addToCounter(String name, String description, String unit, AuditSourceInfo sourceInfo) {
+	private void addToCounter(String name, String description, String unit, Attributes metricAttributes) {
 		this.meter.counterBuilder(name)
 		          .setDescription(description)
 		          .setUnit(unit)
 		          .build()
-		          .add(
-			          1,
-			          Attributes.builder()
-			                    .put("interfaceName", sourceInfo.interfaceName())
-			                    .put("methodName", sourceInfo.methodName())
-			                    .build()
-		          );
+		          .add(1, metricAttributes);
 	}
 
 	private void addToTotalTokenCount(ChatResponseMetadata metadata) {
