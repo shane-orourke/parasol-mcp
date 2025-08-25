@@ -74,12 +74,18 @@ quarkus:
   tls:
     trust-all: true
 
+  # Jackson
+  rest:
+    jackson:
+      optimization:
+        enable-reflection-free-serialization: true
+
+  jackson:
+    serialization-inclusion: non-empty
+
   # Hibernate
   hibernate-orm:
     physical-naming-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
-    mapping:
-      format:
-        global: ignore
 
   # Quinoa
   quinoa:
