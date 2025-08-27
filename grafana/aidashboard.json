@@ -47,7 +47,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Average LLM failures per interaction",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -70,7 +70,7 @@
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "linear",
+            "lineInterpolation": "smooth",
             "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
@@ -86,16 +86,13 @@
               "mode": "off"
             }
           },
+          "decimals": 0,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           },
@@ -132,42 +129,14 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "parasol_llm_interaction_failed_failed_interactions_total{interfaceName=\"org.parasol.ai.GenerateEmailService\",methodName=\"generateEmail\"} / parasol_llm_initialmessages_created_messages_created_total{interfaceName=\"org.parasol.ai.GenerateEmailService\",methodName=\"generateEmail\"}",
+          "expr": "parasol_llm_interaction_failed_failed_interactions_total",
           "instant": false,
           "legendFormat": "{{interfaceName}}.{{methodName}}",
           "range": true,
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "parasol_llm_interaction_failed_failed_interactions_total{interfaceName=\"org.parasol.ai.ClaimService\",methodName=\"chat\"} / parasol_llm_initialmessages_created_messages_created_total{interfaceName=\"org.parasol.ai.ClaimService\",methodName=\"chat\"}",
-          "instant": false,
-          "key": "Q-90f705e0-855d-4757-8f95-b1f9c9db56ba-1",
-          "legendFormat": "{{interfaceName}}.{{methodName}}",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "parasol_llm_interaction_failed_failed_interactions_total{interfaceName=\"org.parasol.ai.guardrail.PolitenessService\",methodName=\"isPolite\"} / parasol_llm_initialmessages_created_messages_created_total{interfaceName=\"org.parasol.ai.guardrail.PolitenessService\",methodName=\"isPolite\"}",
-          "instant": false,
-          "key": "Q-49b93a4b-3a88-43c6-a1c1-778fc9774be9-2",
-          "legendFormat": "{{interfaceName}}.{{methodName}}",
-          "range": true,
-          "refId": "C"
         }
       ],
-      "title": "Avg LLM failures per interaction",
+      "title": "LLM interaction failures",
       "type": "timeseries"
     },
     {
@@ -175,7 +144,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Average number of output guardrail executions per interaction",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -208,12 +177,13 @@
             "spanNulls": false,
             "stacking": {
               "group": "A",
-              "mode": "normal"
+              "mode": "none"
             },
             "thresholdsStyle": {
               "mode": "off"
             }
           },
+          "decimals": 0,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -229,32 +199,7 @@
           },
           "unit": "none"
         },
-        "overrides": [
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "org.parasol.ai.GenerateEmailService.generateEmail"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": true
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -286,7 +231,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "parasol_llm_guardrail_output_executed_executed_output_guardrails_total{interfaceName=\"org.parasol.ai.GenerateEmailService\",methodName=\"generateEmail\"} / parasol_llm_initialmessages_created_messages_created_total{interfaceName=\"org.parasol.ai.GenerateEmailService\",methodName=\"generateEmail\"}",
+          "expr": "parasol_llm_initialmessages_created_messages_created_total{interfaceName!~\"\",methodName!~\"\"}",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -295,36 +240,9 @@
           "range": true,
           "refId": "A",
           "useBackend": false
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "expr": "parasol_llm_guardrail_output_executed_executed_output_guardrails_total{interfaceName=\"org.parasol.ai.ClaimService\",methodName=\"chat\"} / parasol_llm_initialmessages_created_messages_created_total{interfaceName=\"org.parasol.ai.ClaimService\",methodName=\"chat\"}",
-          "hide": false,
-          "instant": false,
-          "legendFormat": "{{interfaceName}}.{{methodName}}",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "parasol_llm_guardrail_output_executed_executed_output_guardrails_total{interfaceName=\"org.parasol.ai.guardrail.PolitenessService\",methodName=\"isPolite\"} / parasol_llm_initialmessages_created_messages_created_total{interfaceName=\"org.parasol.ai.guardrail.PolitenessService\",methodName=\"isPolite\"}",
-          "hide": false,
-          "instant": false,
-          "legendFormat": "{{interfaceName}}.{{methodName}}",
-          "range": true,
-          "refId": "C"
         }
       ],
-      "title": "Avg Output Guardrail Executions per interaction",
+      "title": "Number of AI invocations",
       "type": "timeseries"
     },
     {
@@ -370,6 +288,7 @@
               "mode": "off"
             }
           },
+          "decimals": 0,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -741,6 +660,19 @@
       "type": "gauge"
     },
     {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "id": 163,
+      "panels": [],
+      "title": "HTTP Edpoints",
+      "type": "row"
+    },
+    {
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -915,19 +847,6 @@
       ],
       "title": "Start time",
       "type": "stat"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 22
-      },
-      "id": 163,
-      "panels": [],
-      "title": "HTTP Edpoints",
-      "type": "row"
     },
     {
       "datasource": {
@@ -4494,5 +4413,5 @@
   "timezone": "browser",
   "title": "AI Dashboard",
   "uid": "few3cxgl3sf",
-  "version": 3
+  "version": 8
 }
