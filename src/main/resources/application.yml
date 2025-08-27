@@ -1,4 +1,7 @@
 quarkus:
+  application:
+    name: non-deterministic
+
   # Default LangChain4j configuration
   langchain4j:
     parasol-chat:
@@ -21,17 +24,20 @@ quarkus:
       api-key: "${OPENAI_API_KEY}"
       parasol-chat:
         chat-model:
-          temperature: 0.3
+          model-name: gpt-5-mini
+          temperature: 1
         timeout: 600s
         api-key: "${quarkus.langchain4j.openai.api-key}"
       generate-email:
         chat-model:
-          temperature: 0.3
+          model-name: gpt-5-mini
+          temperature: 1
         timeout: 600s
         api-key: "${quarkus.langchain4j.openai.api-key}"
       politeness:
         chat-model:
-          temperature: 0.3
+          model-name: gpt-5-mini
+          temperature: 1
         timeout: 600s
         api-key: "${quarkus.langchain4j.openai.api-key}"
 
@@ -95,6 +101,22 @@ quarkus:
       ~: true
       node-version: 22.18.0
       npm-version: 10.9.3
+
+  # OpenAPI
+  smallrye-openapi:
+    info-title: Non Deterministic? No Problem!
+    info-description: Demo application to show how to test non-deterministic systems
+    info-version: 1.0
+    info-contact-name: Eric Deandrea
+    info-contact-url: https://github.com/edeandrea
+  swagger-ui:
+    always-include: true
+
+  # Container image
+  container-image:
+    builder: docker
+    group: edeandrea
+    name: "${quarkus.application.name}"
 
   # Websockets
   websockets-next:
@@ -193,3 +215,32 @@ quarkus:
       sql-load-script: import.sql
       schema-management:
         strategy: drop-and-create
+
+'%openshift':
+  quarkus:
+    config:
+      profile:
+        parent: prod
+    hibernate-orm:
+      schema-management:
+        strategy: update
+    kubernetes:
+      deployment-target: openshift
+    container-image:
+      builder: openshift
+      registry: image-registry.openshift-image-registry.svc:5000
+    openshift:
+      part-of: parasol-insurance
+      base-jvm-image: registry.access.redhat.com/ubi9/openjdk-21:1.23
+      labels:
+        app: non-deterministic
+      env:
+        configmaps: app-config
+        secrets: db-creds,app-creds
+      route:
+        expose: true
+        tls:
+          termination: edge
+          insecure-edge-termination-policy: Redirect
+      annotations:
+        "app.openshift.io/connects-to": non-deterministic-db,lgtm,mailpit
