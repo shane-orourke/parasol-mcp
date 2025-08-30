@@ -74,6 +74,13 @@
         "y": 1
       },
       "id": 200,
+      "links": [
+        {
+          "targetBlank": true,
+          "title": "OpenAI Pricing",
+          "url": "https://platform.openai.com/docs/pricing"
+        }
+      ],
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -126,7 +133,6 @@
         }
       ],
       "title": "Total AI Cost",
-      "transparent": true,
       "type": "stat"
     },
     {
@@ -4500,5 +4506,5 @@
   "timezone": "browser",
   "title": "AI Dashboard",
   "uid": "few3cxgl3sf",
-  "version": 11
+  "version": 12
 }
