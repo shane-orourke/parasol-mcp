@@ -340,8 +340,10 @@
     },
     {
       "datasource": {
+        "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Average number of guardrail executions per interaction",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -402,7 +404,7 @@
         "x": 12,
         "y": 9
       },
-      "id": 199,
+      "id": 201,
       "options": {
         "legend": {
           "calcs": [],
@@ -419,9 +421,15 @@
       "pluginVersion": "11.6.0",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "editorMode": "code",
-          "expr": "parasol_llm_token_input_count_tokens_total{modelName!~\"\"}",
-          "legendFormat": "Input tokens ({{modelName}})",
+          "expr": "parasol_llm_guardrail_output_executed_executed_output_guardrails_total{interfaceName=\"org.parasol.ai.GenerateEmailService\",methodName=\"generateEmail\"} / parasol_llm_initialmessages_created_messages_created_total{interfaceName=\"org.parasol.ai.GenerateEmailService\",methodName=\"generateEmail\"}",
+          "instant": false,
+          "key": "Q-6cb16621-79cf-4b47-8513-1b16f6741ce5-0",
+          "legendFormat": "GenerateEmailService.generateEmail",
           "range": true,
           "refId": "A"
         },
@@ -431,9 +439,11 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "parasol_llm_token_output_count_tokens_total{modelName!~\"\"}",
-          "hide": false,
-          "legendFormat": "Output tokens ({{modelName}})",
+          "exemplar": false,
+          "expr": "(parasol_llm_guardrail_output_executed_executed_output_guardrails_total{interfaceName=\"org.parasol.ai.ClaimService\",methodName=\"chat\"} / parasol_llm_initialmessages_created_messages_created_total{interfaceName=\"org.parasol.ai.ClaimService\",methodName=\"chat\"}) or vector(0)",
+          "instant": false,
+          "key": "Q-6cb16621-79cf-4b47-8513-1b16f6741ce5-0",
+          "legendFormat": "ClaimService.chat",
           "range": true,
           "refId": "B"
         },
@@ -442,19 +452,16 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "parasol_llm_token_count_tokens_total{modelName!~\"\"}",
-          "fullMetaSearch": false,
-          "hide": false,
-          "includeNullMetadata": true,
-          "legendFormat": "Total tokens ({{modelName}})",
+          "editorMode": "code",
+          "expr": "(parasol_llm_guardrail_output_executed_executed_output_guardrails_total{interfaceName=\"org.parasol.ai.guardrail.PolitenessService\",methodName=\"isPolite\"} / parasol_llm_initialmessages_created_messages_created_total{interfaceName=\"org.parasol.ai.guardrail.PolitenessService\",methodName=\"isPolite\"}) or vector(0)",
+          "instant": false,
+          "key": "Q-6cb16621-79cf-4b47-8513-1b16f6741ce5-0",
+          "legendFormat": "PolitenessService.isPolite",
           "range": true,
-          "refId": "C",
-          "useBackend": false
+          "refId": "C"
         }
       ],
-      "title": "Token counts",
+      "title": "Avg Guardrail executions / interaction",
       "type": "timeseries"
     },
     {
@@ -560,12 +567,131 @@
       "type": "timeseries"
     },
     {
+      "datasource": {
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 17
+      },
+      "id": 199,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "parasol_llm_token_input_count_tokens_total{modelName!~\"\"}",
+          "legendFormat": "Input tokens ({{modelName}})",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "parasol_llm_token_output_count_tokens_total{modelName!~\"\"}",
+          "hide": false,
+          "legendFormat": "Output tokens ({{modelName}})",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "parasol_llm_token_count_tokens_total{modelName!~\"\"}",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "legendFormat": "Total tokens ({{modelName}})",
+          "range": true,
+          "refId": "C",
+          "useBackend": false
+        }
+      ],
+      "title": "Token counts",
+      "type": "timeseries"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 25
       },
       "id": 125,
       "panels": [],
@@ -620,7 +746,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 22
+        "y": 26
       },
       "id": 65,
       "maxDataPoints": 100,
@@ -715,7 +841,7 @@
         "h": 4,
         "w": 6,
         "x": 6,
-        "y": 22
+        "y": 26
       },
       "id": 75,
       "maxDataPoints": 100,
@@ -758,7 +884,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 30
       },
       "id": 163,
       "panels": [],
@@ -815,7 +941,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 27
+        "y": 31
       },
       "id": 63,
       "maxDataPoints": 100,
@@ -899,7 +1025,7 @@
         "h": 4,
         "w": 6,
         "x": 6,
-        "y": 27
+        "y": 31
       },
       "id": 92,
       "maxDataPoints": 100,
@@ -1005,7 +1131,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 27
+        "y": 31
       },
       "id": 155,
       "options": {
@@ -1104,7 +1230,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 31
+        "y": 35
       },
       "id": 143,
       "options": {
@@ -1205,7 +1331,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 35
+        "y": 39
       },
       "id": 151,
       "options": {
@@ -1304,7 +1430,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 39
+        "y": 43
       },
       "id": 153,
       "options": {
@@ -1346,7 +1472,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 47
+        "y": 51
       },
       "id": 127,
       "panels": [
@@ -1745,7 +1871,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 48
+        "y": 52
       },
       "id": 128,
       "panels": [],
@@ -1819,7 +1945,7 @@
         "h": 7,
         "w": 11,
         "x": 0,
-        "y": 49
+        "y": 53
       },
       "id": 106,
       "options": {
@@ -1949,7 +2075,7 @@
         "h": 7,
         "w": 13,
         "x": 11,
-        "y": 49
+        "y": 53
       },
       "id": 93,
       "options": {
@@ -2154,7 +2280,7 @@
         "h": 7,
         "w": 8,
         "x": 0,
-        "y": 56
+        "y": 60
       },
       "id": 124,
       "options": {
@@ -2260,7 +2386,7 @@
         "h": 7,
         "w": 8,
         "x": 8,
-        "y": 56
+        "y": 60
       },
       "id": 32,
       "options": {
@@ -2397,7 +2523,7 @@
         "h": 7,
         "w": 8,
         "x": 16,
-        "y": 56
+        "y": 60
       },
       "id": 61,
       "options": {
@@ -2461,7 +2587,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 63
+        "y": 67
       },
       "id": 192,
       "panels": [],
@@ -2535,7 +2661,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 64
+        "y": 68
       },
       "id": 193,
       "options": {
@@ -2671,7 +2797,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 64
+        "y": 68
       },
       "id": 194,
       "options": {
@@ -2733,7 +2859,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 72
+        "y": 76
       },
       "id": 129,
       "panels": [],
@@ -2806,7 +2932,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 73
+        "y": 77
       },
       "id": 3,
       "options": {
@@ -2884,7 +3010,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 80
+        "y": 84
       },
       "id": 130,
       "panels": [],
@@ -2955,7 +3081,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 81
+        "y": 85
       },
       "id": 78,
       "options": {
@@ -3032,7 +3158,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 88
+        "y": 92
       },
       "id": 131,
       "panels": [],
@@ -3104,7 +3230,7 @@
         "h": 7,
         "w": 8,
         "x": 0,
-        "y": 89
+        "y": 93
       },
       "id": 98,
       "options": {
@@ -3207,7 +3333,7 @@
         "h": 7,
         "w": 8,
         "x": 8,
-        "y": 89
+        "y": 93
       },
       "id": 101,
       "options": {
@@ -3323,7 +3449,7 @@
         "h": 7,
         "w": 8,
         "x": 16,
-        "y": 89
+        "y": 93
       },
       "id": 99,
       "options": {
@@ -3380,7 +3506,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 96
+        "y": 100
       },
       "id": 132,
       "panels": [],
@@ -3452,7 +3578,7 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 97
+        "y": 101
       },
       "id": 37,
       "options": {
@@ -3554,7 +3680,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 97
+        "y": 101
       },
       "id": 38,
       "options": {
@@ -3600,7 +3726,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 104
+        "y": 108
       },
       "id": 133,
       "panels": [],
@@ -3672,7 +3798,7 @@
         "h": 7,
         "w": 6,
         "x": 0,
-        "y": 105
+        "y": 109
       },
       "id": 33,
       "options": {
@@ -3787,7 +3913,7 @@
         "h": 7,
         "w": 6,
         "x": 6,
-        "y": 105
+        "y": 109
       },
       "id": 83,
       "options": {
@@ -3888,7 +4014,7 @@
         "h": 7,
         "w": 6,
         "x": 12,
-        "y": 105
+        "y": 109
       },
       "id": 85,
       "options": {
@@ -4003,7 +4129,7 @@
         "h": 7,
         "w": 6,
         "x": 18,
-        "y": 105
+        "y": 109
       },
       "id": 84,
       "options": {
@@ -4045,7 +4171,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 112
+        "y": 116
       },
       "id": 173,
       "panels": [
@@ -4506,5 +4632,5 @@
   "timezone": "browser",
   "title": "AI Dashboard",
   "uid": "few3cxgl3sf",
-  "version": 12
+  "version": 13
 }
