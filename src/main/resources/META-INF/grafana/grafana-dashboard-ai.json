@@ -4560,7 +4560,7 @@
   "preload": false,
   "refresh": "auto",
   "schemaVersion": 41,
-  "tags": [],
+  "tags": ["AI", "Auditing", "OpenTelemetry", "Micrometer", "Quarkus", "Metrics"],
   "templating": {
     "list": [
       {

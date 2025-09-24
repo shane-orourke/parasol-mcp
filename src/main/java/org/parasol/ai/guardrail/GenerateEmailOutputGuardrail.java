@@ -1,11 +1,16 @@
 package org.parasol.ai.guardrail;
 
+import org.parasol.ai.Email;
 import org.parasol.ai.GenerateEmailService;
 
 import dev.langchain4j.data.message.AiMessage;
-import io.quarkiverse.langchain4j.guardrails.AbstractJsonExtractorOutputGuardrail;
+import dev.langchain4j.guardrail.JsonExtractorOutputGuardrail;
 
-public abstract class GenerateEmailOutputGuardrail extends AbstractJsonExtractorOutputGuardrail {
+public abstract class GenerateEmailOutputGuardrail extends JsonExtractorOutputGuardrail<Email> {
+	public GenerateEmailOutputGuardrail() {
+		super(Email.class);
+	}
+
 	@Override
 	protected String getInvalidJsonMessage(AiMessage aiMessage, String json) {
 		return "Invalid JSON format in response";

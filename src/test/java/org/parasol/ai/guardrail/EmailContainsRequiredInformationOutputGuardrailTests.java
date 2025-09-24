@@ -1,25 +1,28 @@
 package org.parasol.ai.guardrail;
 
-import static io.quarkiverse.langchain4j.guardrails.GuardrailAssertions.assertThat;
+import static dev.langchain4j.test.guardrail.GuardrailAssertions.assertThat;
 import static org.mockito.Mockito.verify;
 
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.parasol.ai.ClaimInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.parasol.ai.ClaimInfo;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
 
 import dev.langchain4j.data.message.AiMessage;
-import io.quarkiverse.langchain4j.guardrails.GuardrailResult.Result;
-import io.quarkiverse.langchain4j.guardrails.OutputGuardrailParams;
+import dev.langchain4j.guardrail.GuardrailRequestParams;
+import dev.langchain4j.guardrail.GuardrailResult.Result;
+import dev.langchain4j.guardrail.OutputGuardrailRequest;
+import dev.langchain4j.model.chat.response.ChatResponse;
+import io.quarkiverse.langchain4j.guardrails.NoopChatExecutor;
 
 @QuarkusTest
 class EmailContainsRequiredInformationOutputGuardrailTests {
@@ -51,7 +54,7 @@ class EmailContainsRequiredInformationOutputGuardrailTests {
 	@Test
 	void guardrailSuccess() {
 		var body = EMAIL_TEMPLATE.formatted(CLIENT_NAME, CLAIM_NUMBER, CLAIM_STATUS);
-		var params = createParams(body, CLAIM_NUMBER, CLAIM_STATUS, CLIENT_NAME);
+		var params = createRequest(body, CLAIM_NUMBER, CLAIM_STATUS, CLIENT_NAME);
 
 		assertThat(this.guardrail.validate(params))
 			.isSuccessful();
@@ -97,7 +100,7 @@ class EmailContainsRequiredInformationOutputGuardrailTests {
 	@MethodSource("emailDoesntContainRequiredInfoParams")
 	void emailDoesntContainRequiredInfo(ClaimInfo missingClaimInfo, String expectedRepromptMessage, String expectedRepromptPrompt) {
 		var responseWithMissingInfo = EMAIL_TEMPLATE.formatted(missingClaimInfo.clientName(), missingClaimInfo.claimNumber(), missingClaimInfo.claimStatus());
-		var params = createParams(responseWithMissingInfo, CLAIM_NUMBER, CLAIM_STATUS, CLIENT_NAME);
+		var params = createRequest(responseWithMissingInfo, CLAIM_NUMBER, CLAIM_STATUS, CLIENT_NAME);
 		var result = this.guardrail.validate(params);
 
 		assertThat(result)
@@ -127,17 +130,24 @@ class EmailContainsRequiredInformationOutputGuardrailTests {
 		);
 	}
 
-	private static OutputGuardrailParams createParams(String body, String claimNumber, String claimStatus, String clientName) {
-		return createParams(body, new ClaimInfo(clientName, claimNumber, claimStatus));
+	private static OutputGuardrailRequest createRequest(String body, String claimNumber, String claimStatus, String clientName) {
+		return createRequest(body, new ClaimInfo(clientName, claimNumber, claimStatus));
 	}
 
-	private static OutputGuardrailParams createParams(String body, ClaimInfo claimInfo) {
-		return new OutputGuardrailParams(
-			AiMessage.from(JSON.formatted(body).replaceAll("\n", "\\\\n")),
-			null,
-			null,
-			null,
-			Map.of("claimInfo", claimInfo)
-		);
+	private static OutputGuardrailRequest createRequest(String body, ClaimInfo claimInfo) {
+		return OutputGuardrailRequest.builder()
+		                             .responseFromLLM(
+																	 ChatResponse.builder()
+																	             .aiMessage(AiMessage.from(JSON.formatted(body).replaceAll("\n", "\\\\n")))
+																	             .build()
+		                             )
+		                             .requestParams(
+																	 GuardrailRequestParams.builder()
+																	                       .userMessageTemplate("")
+																	                       .variables(Map.of("claimInfo", claimInfo))
+																	                       .build()
+		                             )
+		                             .chatExecutor(new NoopChatExecutor())
+		                             .build();
 	}
 }

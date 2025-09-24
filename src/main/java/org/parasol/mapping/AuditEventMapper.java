@@ -7,26 +7,21 @@ import java.util.stream.Stream;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import org.parasol.model.audit.AuditSource;
-import org.parasol.model.audit.InputGuardrailExecutedAuditEvent;
 import org.parasol.model.audit.LLMInitialMessagesCreatedAuditEvent;
 import org.parasol.model.audit.LLMInteractionCompleteAuditEvent;
 import org.parasol.model.audit.LLMInteractionFailedAuditEvent;
 import org.parasol.model.audit.LLMResponseReceivedAuditEvent;
-import org.parasol.model.audit.OutputGuardrailExecutedAuditEvent;
 import org.parasol.model.audit.ToolExecutedAuditEvent;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import io.quarkiverse.langchain4j.audit.AuditSourceInfo;
 import io.quarkiverse.langchain4j.audit.InitialMessagesCreatedEvent;
-import io.quarkiverse.langchain4j.audit.InputGuardrailExecutedEvent;
 import io.quarkiverse.langchain4j.audit.LLMInteractionCompleteEvent;
 import io.quarkiverse.langchain4j.audit.LLMInteractionFailureEvent;
-import io.quarkiverse.langchain4j.audit.OutputGuardrailExecutedEvent;
 import io.quarkiverse.langchain4j.audit.ResponseFromLLMReceivedEvent;
 import io.quarkiverse.langchain4j.audit.ToolExecutedEvent;
 
@@ -80,24 +75,24 @@ public class AuditEventMapper {
 			.build();
 	}
 
-	public InputGuardrailExecutedAuditEvent toAuditEvent(InputGuardrailExecutedEvent inputGuardrailExecutedEvent) {
-		return InputGuardrailExecutedAuditEvent.builder()
-			.sourceInfo(toAuditSource(inputGuardrailExecutedEvent.sourceInfo()))
-			.userMessage(fromUserMessage(inputGuardrailExecutedEvent.params().userMessage()))
-			.rewrittenUserMessage(fromUserMessage(inputGuardrailExecutedEvent.rewrittenUserMessage()))
-			.result(inputGuardrailExecutedEvent.result().result().name())
-			.guardrailClass(inputGuardrailExecutedEvent.guardrailClass().getName())
-			.build();
-	}
-
-	public OutputGuardrailExecutedAuditEvent toAuditEvent(OutputGuardrailExecutedEvent outputGuardrailExecutedEvent) {
-		return OutputGuardrailExecutedAuditEvent.builder()
-			.sourceInfo(toAuditSource(outputGuardrailExecutedEvent.sourceInfo()))
-			.response(Optional.ofNullable(outputGuardrailExecutedEvent.params().responseFromLLM()).map(AiMessage::text).orElse(null))
-			.result(outputGuardrailExecutedEvent.result().result().name())
-			.guardrailClass(outputGuardrailExecutedEvent.guardrailClass().getName())
-			.build();
-	}
+//	public InputGuardrailExecutedAuditEvent toAuditEvent(InputGuardrailExecutedEvent inputGuardrailExecutedEvent) {
+//		return InputGuardrailExecutedAuditEvent.builder()
+//			.sourceInfo(toAuditSource(inputGuardrailExecutedEvent.sourceInfo()))
+//			.userMessage(fromUserMessage(inputGuardrailExecutedEvent.params().userMessage()))
+//			.rewrittenUserMessage(fromUserMessage(inputGuardrailExecutedEvent.rewrittenUserMessage()))
+//			.result(inputGuardrailExecutedEvent.result().result().name())
+//			.guardrailClass(inputGuardrailExecutedEvent.guardrailClass().getName())
+//			.build();
+//	}
+//
+//	public OutputGuardrailExecutedAuditEvent toAuditEvent(OutputGuardrailExecutedEvent outputGuardrailExecutedEvent) {
+//		return OutputGuardrailExecutedAuditEvent.builder()
+//			.sourceInfo(toAuditSource(outputGuardrailExecutedEvent.sourceInfo()))
+//			.response(Optional.ofNullable(outputGuardrailExecutedEvent.params().responseFromLLM()).map(AiMessage::text).orElse(null))
+//			.result(outputGuardrailExecutedEvent.result().result().name())
+//			.guardrailClass(outputGuardrailExecutedEvent.guardrailClass().getName())
+//			.build();
+//	}
 
 	private AuditSource toAuditSource(AuditSourceInfo auditSourceInfo) {
 		return AuditSource.builder()

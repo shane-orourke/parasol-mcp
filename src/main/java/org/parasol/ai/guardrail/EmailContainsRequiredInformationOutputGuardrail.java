@@ -2,17 +2,15 @@ package org.parasol.ai.guardrail;
 
 import java.util.Optional;
 
-import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import org.parasol.ai.ClaimInfo;
 import org.parasol.ai.Email;
 
 import dev.langchain4j.data.message.AiMessage;
-import io.quarkiverse.langchain4j.guardrails.OutputGuardrailParams;
-import io.quarkiverse.langchain4j.guardrails.OutputGuardrailResult;
+import dev.langchain4j.guardrail.OutputGuardrailRequest;
+import dev.langchain4j.guardrail.OutputGuardrailResult;
 
-@Priority(10)
 @ApplicationScoped
 public class EmailContainsRequiredInformationOutputGuardrail extends GenerateEmailOutputGuardrail {
 	static final String REPROMPT_MESSAGE = "Invalid email %s";
@@ -25,12 +23,12 @@ public class EmailContainsRequiredInformationOutputGuardrail extends GenerateEma
 	static final String CLAIM_STATUS_NOT_FOUND_PROMPT = "The email body did not contain the claim status. Please include the claim status \"%s\", exactly as is (case-sensitive), in the email body.";
 
 	@Override
-	public OutputGuardrailResult validate(OutputGuardrailParams params) {
-		var result = super.validate(params);
+	public OutputGuardrailResult validate(OutputGuardrailRequest request) {
+		var result = super.validate(request);
 
 		if (result.isSuccess()) {
 			var email = (Email) result.successfulResult();
-			var claimInfo = Optional.ofNullable(params.variables())
+			var claimInfo = Optional.ofNullable(request.requestParams().variables())
 			                        .map(vars -> (ClaimInfo) vars.get("claimInfo"))
 			                        .orElse(null);
 
@@ -69,10 +67,5 @@ public class EmailContainsRequiredInformationOutputGuardrail extends GenerateEma
 		}
 
 		return result;
-	}
-
-	@Override
-	protected Class<?> getOutputClass() {
-		return Email.class;
 	}
 }

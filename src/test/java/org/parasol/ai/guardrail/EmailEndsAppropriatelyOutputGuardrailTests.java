@@ -1,16 +1,16 @@
 package org.parasol.ai.guardrail;
 
-import static io.quarkiverse.langchain4j.guardrails.GuardrailAssertions.assertThat;
+import static dev.langchain4j.test.guardrail.GuardrailAssertions.assertThat;
 import static org.mockito.Mockito.verify;
 
-import org.parasol.ai.GenerateEmailService;
 import org.junit.jupiter.api.Test;
+import org.parasol.ai.GenerateEmailService;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
 
 import dev.langchain4j.data.message.AiMessage;
-import io.quarkiverse.langchain4j.guardrails.GuardrailResult.Result;
+import dev.langchain4j.guardrail.GuardrailResult.Result;
 
 @QuarkusTest
 class EmailEndsAppropriatelyOutputGuardrailTests {

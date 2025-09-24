@@ -1,12 +1,15 @@
 package org.parasol.ai;
 
-import org.parasol.ai.guardrail.CompositeOutputGuardrail;
+import org.parasol.ai.guardrail.EmailContainsRequiredInformationOutputGuardrail;
+import org.parasol.ai.guardrail.EmailEndsAppropriatelyOutputGuardrail;
+import org.parasol.ai.guardrail.EmailStartsAppropriatelyOutputGuardrail;
+import org.parasol.ai.guardrail.PolitenessOutputGuardrail;
 
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
+import dev.langchain4j.service.guardrail.OutputGuardrails;
 import io.quarkiverse.langchain4j.RegisterAiService;
 import io.quarkiverse.langchain4j.RegisterAiService.NoRetrievalAugmentorSupplier;
-import io.quarkiverse.langchain4j.guardrails.OutputGuardrails;
 
 @RegisterAiService(modelName = "generate-email", retrievalAugmentor = NoRetrievalAugmentorSupplier.class)
 public interface GenerateEmailService {
@@ -48,6 +51,6 @@ public interface GenerateEmailService {
 		
 		Make sure to include the claim number ({{claimInfo.claimNumber}}) and that the claim's status has been changed to "{{claimInfo.claimStatus}}".
 		""")
-	@OutputGuardrails(CompositeOutputGuardrail.class)
+	@OutputGuardrails({ EmailContainsRequiredInformationOutputGuardrail.class, EmailStartsAppropriatelyOutputGuardrail.class, EmailEndsAppropriatelyOutputGuardrail.class, PolitenessOutputGuardrail.class })
 	Email generateEmail(ClaimInfo claimInfo);
 }

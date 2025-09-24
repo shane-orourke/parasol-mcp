@@ -1,15 +1,13 @@
 package org.parasol.ai.guardrail;
 
-import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import org.parasol.ai.Email;
 import org.parasol.ai.GenerateEmailService;
 
 import dev.langchain4j.data.message.AiMessage;
-import io.quarkiverse.langchain4j.guardrails.OutputGuardrailResult;
+import dev.langchain4j.guardrail.OutputGuardrailResult;
 
-@Priority(6)
 @ApplicationScoped
 public class EmailEndsAppropriatelyOutputGuardrail extends GenerateEmailOutputGuardrail {
 	static final String REPROMPT_MESSAGE = "Invalid email body";
@@ -32,10 +30,5 @@ public class EmailEndsAppropriatelyOutputGuardrail extends GenerateEmailOutputGu
 		}
 
 		return result;
-	}
-
-	@Override
-	protected Class<?> getOutputClass() {
-		return Email.class;
 	}
 }
